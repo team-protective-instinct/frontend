@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text } from 'react-native';
 
 interface PendingBadgeProps {
@@ -7,21 +6,11 @@ interface PendingBadgeProps {
 
 export function PendingBadge({ count }: PendingBadgeProps) {
   if (count === 0) return null;
+  const displayCount = count > 99 ? '99+' : count.toString();
+  
   return (
-    <View
-      style={{
-        position: 'absolute',
-        top: -4,
-        right: -10,
-        backgroundColor: '#EF4444',
-        borderRadius: 10,
-        minWidth: 18,
-        height: 18,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 4,
-      }}>
-      <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>{count}</Text>
+    <View className="bg-threat-critical rounded-full min-w-[18px] h-[18px] justify-center items-center px-1.5">
+      <Text className="text-text-primary text-[10px] font-bold">{displayCount}</Text>
     </View>
   );
 }

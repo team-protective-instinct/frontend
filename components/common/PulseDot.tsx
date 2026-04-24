@@ -1,11 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { View, Animated, Easing, Platform } from 'react-native';
 
 interface PulseDotProps {
   color?: string;
 }
 
-export function PulseDot({ color = '#10B981' }: PulseDotProps) {
+export function PulseDot({ color = '#00d992' }: PulseDotProps) {
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(0.8)).current;
 
