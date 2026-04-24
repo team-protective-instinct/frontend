@@ -1,7 +1,8 @@
 export enum RouteName {
-  DASHBOARD = 'index',
+  OVERVIEW = 'index',
   INCIDENTS = 'incidents',
-  REPORTS = 'reports',
+  ASSETS = 'assets',
+  PLAYBOOKS = 'playbooks',
   SETTINGS = 'settings',
 }
 
@@ -14,27 +15,34 @@ export interface NavItem {
 
 export const NAVIGATION_ITEMS: NavItem[] = [
   {
-    id: RouteName.DASHBOARD,
-    name: 'Dashboard',
-    icon: 'shield-checkmark-outline',
+    id: RouteName.OVERVIEW,
+    name: 'Overview',
+    icon: 'grid-outline',
     href: '/',
   },
   {
     id: RouteName.INCIDENTS,
     name: 'Incidents',
-    icon: 'flash-outline',
+    icon: 'alert-circle-outline',
     href: '/incidents',
   },
   {
-    id: RouteName.REPORTS,
-    name: 'Reports',
-    icon: 'document-text-outline',
-    href: '/reports',
+    id: RouteName.ASSETS,
+    name: 'Assets',
+    icon: 'server-outline',
+    href: '/assets',
   },
   {
-    id: RouteName.SETTINGS,
-    name: 'Settings',
-    icon: 'settings-outline',
-    href: '/settings',
+    id: RouteName.PLAYBOOKS,
+    name: 'Playbooks',
+    icon: 'book-outline',
+    href: '/playbooks',
   },
 ];
+
+export const SETTINGS_NAV_ITEM: NavItem = {
+  id: RouteName.SETTINGS,
+  name: 'Settings',
+  icon: 'settings-outline',
+  href: '/settings',
+};

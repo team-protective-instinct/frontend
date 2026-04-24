@@ -7,24 +7,24 @@ module.exports = {
     extend: {
       colors: {
         bg: {
-          primary: '#0F172A',
-          secondary: '#1E293B',
-          card: '#1E293B',
-          elevated: '#293548',
+          primary: '#050507', // Abyss Black
+          secondary: '#101010', // Carbon Surface
+          card: '#101010',
+          elevated: '#19211c', // Surface Container
         },
         threat: {
-          critical: '#EF4444',
-          warning: '#F59E0B',
-          safe: '#10B981',
-          info: '#3B82F6',
-          dismissed: '#64748B',
+          critical: '#fb565b', // Danger Coral
+          warning: '#ffba00', // Warning Amber
+          safe: '#00d992', // Signal Green
+          info: '#3b82f6', // Tailwind Blue (for now)
+          dismissed: '#8b949e', // Steel Slate
         },
-        accent: '#8B5CF6',
-        border: '#334155',
+        accent: '#00d992', // Signal Green
+        border: '#3d3a39', // Warm Charcoal
         text: {
-          primary: '#F1F5F9',
-          secondary: '#94A3B8',
-          muted: '#475569',
+          primary: '#f2f2f2', // Snow White
+          secondary: '#b8b3b0', // Warm Parchment
+          muted: '#8b949e', // Steel Slate
         },
       },
     },

