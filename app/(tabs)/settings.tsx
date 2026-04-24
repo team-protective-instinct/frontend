@@ -1,278 +1,142 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Switch,
-  Alert,
-  useWindowDimensions,
-  Platform,
-} from 'react-native';
+import { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { mockVictimServers, mockAlarmConfig } from '../../data/mock';
-import { ServerCard } from '../../components/settings/ServerCard';
-import { SectionHeader } from '../../components/common/SectionHeader';
-import type { VictimServer, OsType } from '../../types';
-
-const OS_TYPES: OsType[] = ['Linux', 'Windows', 'MacOS', 'Unknown'];
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 export default function SettingsScreen() {
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 1024 && Platform.OS === 'web';
+  const isDesktop = useIsDesktop();
+  const [activeSubModal, setActiveSubModal] = useState<string | null>(null);
 
-  const [servers, setServers] = useState<VictimServer[]>(mockVictimServers);
-  const [showForm, setShowForm] = useState(false);
-  const [formName, setFormName] = useState('');
-  const [formIp, setFormIp] = useState('');
-  const [formOs, setFormOs] = useState<OsType>('Linux');
-
-  const [threshold, setThreshold] = useState(mockAlarmConfig.threatScoreThreshold);
-  const [pushEnabled, setPushEnabled] = useState(mockAlarmConfig.enablePushNotification);
-  const [alertEmail, setAlertEmail] = useState(mockAlarmConfig.alertEmail ?? '');
-
-  const handleAddServer = () => {
-    if (!formName.trim() || !formIp.trim()) {
-      Alert.alert('입력 오류', '서버명과 IP 주소를 입력하세요.');
-      return;
+  const settingGroups = [
+    {
+      title: 'Personalization',
+      items: [
+        { id: 'profile', icon: 'person-outline', label: 'User Profile', value: 'Admin User' },
+        { id: 'notifications', icon: 'notifications-outline', label: 'Security Alerts', value: 'Real-time' },
+      ]
+    },
+    {
+      title: 'Security',
+      items: [
+        { id: 'api', icon: 'key-outline', label: 'API Management', value: '3 Active Keys' },
+        { id: 'logs', icon: 'list-outline', label: 'Audit Logs', value: '' },
+      ]
     }
-    const newServer: VictimServer = {
-      id: `srv${Date.now()}`,
-      name: formName.trim(),
-      ip: formIp.trim(),
-      os: formOs,
-      registered: new Date().toISOString(),
-      agentStatus: 'disconnected',
-    };
-    setServers((prev) => [...prev, newServer]);
-    setFormName('');
-    setFormIp('');
-    setFormOs('Linux');
-    setShowForm(false);
-    Alert.alert('✅ 등록 완료', `${newServer.name} (${newServer.ip})가 등록되었습니다.`);
-  };
+  ];
 
-  const handleDeleteServer = (id: string) => {
-    const srv = servers.find((s) => s.id === id);
-    Alert.alert('서버 삭제', `"${srv?.name}"을(를) 삭제할까요?`, [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '삭제',
-        style: 'destructive',
-        onPress: () => setServers((prev) => prev.filter((s) => s.id !== id)),
-      },
-    ]);
-  };
-
-  const handleSaveAlarm = () => {
-    Alert.alert('✅ 저장 완료', `위협 점수 ${threshold}점 이상 시 알람이 전송됩니다.`);
+  const renderSubContent = () => {
+    switch(activeSubModal) {
+      case 'profile':
+        return (
+          <View className="gap-8">
+            <View className="items-center">
+              <View className="w-24 h-24 rounded-full bg-[#00d992]/20 border border-[#00d992] items-center justify-center">
+                <Ionicons name="person" size={48} color="#00d992" />
+              </View>
+              <Text className="mt-4 text-xl font-black text-[#f2f2f2]">Admin User</Text>
+              <Text className="text-sm text-[#8b949e]">admin@protective-instinct.ai</Text>
+            </View>
+            <View className="gap-4">
+              <View className="bg-[#050507] p-5 rounded-2xl border border-[#3d3a39]">
+                <Text className="text-[10px] font-bold text-[#8b949e] uppercase mb-1">Role</Text>
+                <Text className="text-sm font-bold text-[#f2f2f2]">SOC Level 3 Analyst</Text>
+              </View>
+              <TouchableOpacity className="bg-[#3d3a39]/20 p-5 rounded-2xl border border-[#3d3a39] items-center">
+                <Text className="text-sm font-bold text-[#fb565b]">Change Password</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        );
+      case 'notifications':
+        return (
+          <View className="gap-6">
+            <View className="flex-row justify-between items-center bg-[#050507] p-5 rounded-2xl border border-[#3d3a39]">
+              <View>
+                <Text className="text-sm font-bold text-[#f2f2f2]">Push Notifications</Text>
+                <Text className="text-xs text-[#8b949e]">Alerts for critical threats</Text>
+              </View>
+              <View className="w-10 h-6 bg-[#00d992] rounded-full px-1 justify-center">
+                <View className="w-4 h-4 bg-[#050507] rounded-full self-end" />
+              </View>
+            </View>
+            <View className="flex-row justify-between items-center bg-[#050507] p-5 rounded-2xl border border-[#3d3a39]">
+              <View>
+                <Text className="text-sm font-bold text-[#f2f2f2]">Email Summaries</Text>
+                <Text className="text-xs text-[#8b949e]">Daily security reports</Text>
+              </View>
+              <View className="w-10 h-6 bg-[#3d3a39] rounded-full px-1 justify-center">
+                <View className="w-4 h-4 bg-[#050507] rounded-full" />
+              </View>
+            </View>
+          </View>
+        );
+      default: return null;
+    }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top']}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 60 }}>
-        {/* Header */}
-        <View className={`px-6 pb-6 pt-6 ${isDesktop ? 'mx-auto w-full max-w-7xl' : ''}`}>
-          <Text className="text-3xl font-black tracking-tighter text-[#F1F5F9]">SETTINGS</Text>
-          <Text className="mt-1 text-xs font-semibold uppercase tracking-widest text-[#64748B]">
-            Infrastructure & Agent Management
-          </Text>
-        </View>
+    <SafeAreaView className="flex-1 bg-[#050507]" edges={isDesktop ? [] : ['bottom']}>
+      <View className="flex-1" style={{ padding: isDesktop ? 40 : 20 }}>
+        <Text className="text-3xl font-black tracking-tighter text-[#f2f2f2] mb-1">SETTINGS</Text>
+        <Text className="text-sm font-medium text-[#8b949e] mb-10">Manage your workspace and security preferences</Text>
 
-        <View
-          className={`flex-row flex-wrap ${isDesktop ? 'mx-auto w-full max-w-7xl gap-8 px-6' : 'px-4'}`}>
-          {/* Section: Servers */}
-          <View className={isDesktop ? 'flex-[2]' : 'w-full'}>
-            <SectionHeader title="🖥 Victim System Management" isDesktop={isDesktop} />
-            <View className={isDesktop ? '-mx-2 flex-row flex-wrap' : ''}>
-              {servers.map((s) => (
-                <ServerCard
-                  key={s.id}
-                  server={s}
-                  isDesktop={isDesktop}
-                  onDelete={() => handleDeleteServer(s.id)}
-                />
-              ))}
+        <ScrollView className="flex-1">
+          {settingGroups.map(group => (
+            <View key={group.title} className="mb-10">
+              <Text className="text-[10px] font-bold text-[#8b949e] uppercase tracking-[0.3em] mb-4 ml-2">{group.title}</Text>
+              <View className="bg-[#101010] border border-[#3d3a39] rounded-2xl overflow-hidden">
+                {group.items.map((item, idx) => (
+                  <TouchableOpacity 
+                    key={item.id}
+                    onPress={() => setActiveSubModal(item.id)}
+                    className={`px-6 py-5 flex-row items-center justify-between ${idx !== group.items.length - 1 ? 'border-b border-[#3d3a39]' : ''} hover:bg-[#f2f2f2]/[0.02]`}
+                  >
+                    <View className="flex-row items-center">
+                      <Ionicons name={item.icon as any} size={20} color="#00d992" />
+                      <Text className="ml-4 text-sm font-bold text-[#f2f2f2]">{item.label}</Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      {item.value ? <Text className="text-xs text-[#8b949e] mr-3">{item.value}</Text> : null}
+                      <Ionicons name="chevron-forward" size={16} color="#3d3a39" />
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
+          ))}
 
-            {/* Add Server Button */}
-            <TouchableOpacity
-              onPress={() => setShowForm(!showForm)}
-              className={`mb-6 flex-row items-center justify-center gap-2 rounded-2xl border border-violet-500/30 bg-violet-500/10 py-4 ${isDesktop ? 'mx-2' : ''}`}>
-              <Ionicons
-                name={showForm ? 'remove-circle-outline' : 'add-circle-outline'}
-                size={20}
-                color="#8B5CF6"
-              />
-              <Text className="text-sm font-bold text-violet-400">
-                {showForm ? 'Cancel Registration' : 'Register New Server'}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Register Form */}
-            {showForm && (
-              <View
-                className={`mb-8 rounded-2xl border border-[#334155] bg-[#1E293B] p-6 shadow-xl ${isDesktop ? 'mx-2' : ''}`}>
-                <Text className="mb-6 text-[10px] font-bold uppercase tracking-widest text-[#94A3B8]">
-                  New Server Registration
-                </Text>
-
-                <View className="mb-4">
-                  <Text className="mb-2 text-xs font-semibold text-[#64748B]">Server Name</Text>
-                  <TextInput
-                    value={formName}
-                    onChangeText={setFormName}
-                    placeholder="e.g. Finance Database Tier"
-                    placeholderTextColor="#475569"
-                    className="rounded-xl border border-[#334155] bg-[#0F172A] px-4 py-3 text-sm text-[#F1F5F9]"
-                  />
-                </View>
-
-                <View className="mb-4">
-                  <Text className="mb-2 text-xs font-semibold text-[#64748B]">IP Address</Text>
-                  <TextInput
-                    value={formIp}
-                    onChangeText={setFormIp}
-                    placeholder="e.g. 10.0.5.21"
-                    placeholderTextColor="#475569"
-                    keyboardType="numeric"
-                    className="rounded-xl border border-[#334155] bg-[#0F172A] px-4 py-3 font-mono text-sm text-[#F1F5F9]"
-                  />
-                </View>
-
-                <View className="mb-6">
-                  <Text className="mb-2 text-xs font-semibold text-[#64748B]">OS Type</Text>
-                  <View className="flex-row flex-wrap gap-2">
-                    {OS_TYPES.map((os) => (
-                      <TouchableOpacity
-                        key={os}
-                        onPress={() => setFormOs(os)}
-                        className="rounded-full border px-4 py-1.5"
-                        style={{
-                          backgroundColor: formOs === os ? '#8B5CF620' : '#0F172A',
-                          borderColor: formOs === os ? '#8B5CF6' : '#334155',
-                        }}>
-                        <Text
-                          style={{
-                            color: formOs === os ? '#8B5CF6' : '#64748B',
-                            fontWeight: formOs === os ? '700' : '400',
-                          }}
-                          className="text-xs">
-                          {os}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <TouchableOpacity
-                  onPress={handleAddServer}
-                  className="items-center rounded-xl border border-emerald-500/40 bg-emerald-500/20 py-4">
-                  <Text className="text-sm font-bold text-emerald-400">Complete Registration</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+          <TouchableOpacity className="mt-4 bg-[#fb565b]/10 py-5 rounded-2xl border border-[#fb565b]/20 items-center">
+            <Text className="text-sm font-black text-[#fb565b] uppercase tracking-widest">Sign Out</Text>
+          </TouchableOpacity>
+          
+          <View className="items-center mt-10 mb-20">
+            <Text className="text-[10px] font-bold text-[#3d3a39]">PROTECTIVE INSTINCT SOC v1.2.0-PRO</Text>
           </View>
+        </ScrollView>
+      </View>
 
-          {/* Section: Config */}
-          <View className={isDesktop ? 'flex-1' : 'w-full'}>
-            <SectionHeader title="🔔 Alarm Preferences" isDesktop={isDesktop} />
-            <View className="mb-8 rounded-2xl border border-[#334155] bg-[#1E293B] p-6">
-              {/* Threshold */}
-              <View className="mb-6">
-                <View className="mb-4 flex-row items-center justify-between">
-                  <Text className="text-sm font-semibold text-[#94A3B8]">Threat Threshold</Text>
-                  <View className="rounded-full bg-red-500 px-3 py-1 shadow-md shadow-red-500/50">
-                    <Text className="text-sm font-black text-white">{threshold}</Text>
-                  </View>
-                </View>
-                <View className="flex-row items-center gap-4">
-                  <TouchableOpacity onPress={() => setThreshold(Math.max(0, threshold - 5))}>
-                    <Ionicons name="remove-circle-outline" size={32} color="#475569" />
-                  </TouchableOpacity>
-                  <View className="h-3 flex-1 overflow-hidden rounded-full bg-[#0F172A]">
-                    <View
-                      style={{
-                        width: `${threshold}%`,
-                        backgroundColor:
-                          threshold >= 70 ? '#EF4444' : threshold >= 40 ? '#F59E0B' : '#10B981',
-                        height: '100%',
-                        borderRadius: 9999,
-                      }}
-                    />
-                  </View>
-                  <TouchableOpacity onPress={() => setThreshold(Math.min(100, threshold + 5))}>
-                    <Ionicons name="add-circle-outline" size={32} color="#475569" />
-                  </TouchableOpacity>
-                </View>
-                <Text className="mt-2 text-[11px] text-[#475569]">
-                  Alerts will be triggered when global threat score exceeds {threshold}.
-                </Text>
-              </View>
-
-              {/* Push toggle */}
-              <View className="mb-6 flex-row items-center justify-between border-t border-[#293548] py-5">
-                <View>
-                  <Text className="text-sm font-bold text-[#F1F5F9]">Push Notifications (FCM)</Text>
-                  <Text className="mt-1 text-xs text-[#64748B]">
-                    Real-time critical threat delivery
-                  </Text>
-                </View>
-                <Switch
-                  value={pushEnabled}
-                  onValueChange={setPushEnabled}
-                  trackColor={{ false: '#334155', true: '#8B5CF6' }}
-                  thumbColor={pushEnabled ? '#F1F5F9' : '#64748B'}
-                />
-              </View>
-
-              {/* Alert email */}
-              <View className="mb-6 border-t border-[#293548] pt-5">
-                <Text className="mb-2 text-xs font-semibold text-[#64748B]">
-                  Notification Email
-                </Text>
-                <TextInput
-                  value={alertEmail}
-                  onChangeText={setAlertEmail}
-                  placeholder="admin@agent2.io"
-                  placeholderTextColor="#475569"
-                  keyboardType="email-address"
-                  className="rounded-xl border border-[#334155] bg-[#0F172A] px-4 py-3 text-sm text-[#F1F5F9]"
-                />
-              </View>
-
-              <TouchableOpacity
-                onPress={handleSaveAlarm}
-                className="items-center rounded-xl border border-violet-500/40 bg-violet-500/20 py-4">
-                <Text className="text-sm font-bold text-violet-400">Save Configuration</Text>
+      {/* Settings Sub-Modal */}
+      <Modal visible={!!activeSubModal} animationType={isDesktop ? 'none' : 'slide'} transparent={isDesktop}>
+        <View className={`flex-1 ${isDesktop ? 'flex-row justify-end bg-black/60' : 'bg-[#050507]'}`}>
+          {isDesktop && <TouchableOpacity className="flex-1" onPress={() => setActiveSubModal(null)} />}
+          
+          <SafeAreaView className={`${isDesktop ? 'w-[500px] bg-[#101010] border-l border-[#3d3a39]' : 'flex-1'}`} edges={['top', 'bottom']}>
+            <View className="px-6 py-5 border-b border-[#3d3a39] flex-row justify-between items-center bg-[#050507]">
+              <Text className="text-xl font-black text-[#f2f2f2] uppercase">
+                {activeSubModal?.replace('_', ' ')}
+              </Text>
+              <TouchableOpacity onPress={() => setActiveSubModal(null)} className="p-2">
+                <Ionicons name="close" size={28} color="#8b949e" />
               </TouchableOpacity>
             </View>
-
-            <SectionHeader title="ℹ️ System Diagnostics" isDesktop={isDesktop} />
-            <View className="mb-10 rounded-2xl border border-[#334155] bg-[#1E293B] p-6">
-              {[
-                { label: 'Agent Version', value: 'AGENT-2 v0.1.0' },
-                { label: 'Backend Stack', value: 'FastAPI / Elasticsearch' },
-                { label: 'Protocol', value: 'MCP / Webhook' },
-                { label: 'Build Metadata', value: '2026.04.17-release' },
-              ].map(({ label, value }, idx) => (
-                <View
-                  key={label}
-                  className={`flex-row items-center justify-between py-3 ${
-                    idx !== 0 ? 'border-t border-[#293548]' : ''
-                  }`}>
-                  <Text className="text-[11px] font-medium text-[#64748B]">{label}</Text>
-                  <Text className="font-mono text-[10px] text-[#94A3B8]">{value}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
+            
+            <ScrollView className="flex-1 p-8 bg-[#101010]">
+              {renderSubContent()}
+            </ScrollView>
+          </SafeAreaView>
         </View>
-      </ScrollView>
+      </Modal>
     </SafeAreaView>
   );
 }
