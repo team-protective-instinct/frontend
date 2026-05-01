@@ -8,24 +8,27 @@
 
 1. **[Node.js](https://nodejs.org/)**: 공식 홈페이지에서 LTS 버전을 다운로드하고 설치하세요. (패키지 설치 및 실행에 필요합니다.)
 2. **[Git](https://git-scm.com/)**: 저장소를 클론(Clone)하기 위해 필요합니다.
-3. **Expo Go 앱**: 내 스마트폰(실기기)에서 개발 중인 화면을 띄워보기 위해 필요합니다. 구글 플레이스토어(Android)나 앱스토어(iOS)에서 `Expo Go`를 검색하여 설치해주세요. 
-   *(PC에서 가상 기기로 띄우려면 OS에 맞게 Android Studio 또는 Xcode 설치 및 설정이 필요합니다.)*
+3. **Expo Go 앱**: 내 스마트폰(실기기)에서 개발 중인 화면을 띄워보기 위해 필요합니다. 구글 플레이스토어(Android)나 앱스토어(iOS)에서 `Expo Go`를 검색하여 설치해주세요.
+   _(PC에서 가상 기기로 띄우려면 OS에 맞게 Android Studio 또는 Xcode 설치 및 설정이 필요합니다.)_
 
 ---
 
 ## 🛠️ 설치 방법 (Installation)
 
 1. 터미널(또는 명령 프롬프트)을 열고, 이 레포지토리를 로컬 컴퓨터로 클론합니다.
+
    ```bash
    git clone https://github.com/team-protective-instinct/frontend
    ```
 
 2. 클론한 프로젝트 폴더로 이동합니다.
+
    ```bash
    cd frontend
    ```
 
 3. `npm`을 사용하여 프로젝트 실행에 필요한 패키지(의존성)들을 설치합니다.
+
    ```bash
    npm install
    ```
@@ -39,6 +42,7 @@
 ```bash
 npm start
 ```
+
 명령어를 실행하면 터미널 창에 **QR 코드**가 나타납니다.
 
 - **안드로이드 사용자**: 스마트폰에서 `Expo Go` 앱을 열고 화면 중앙에 있는 **'Scan QR code'**를 눌러 터미널의 QR 코드를 촬영하세요.
