@@ -1,5 +1,7 @@
 # AGENTS.md
 
+> **Workspace context**: This is part of a multi-project workspace. See root [AGENTS.md](../AGENTS.md) for overall architecture, data flow, and startup order.
+
 ## Repo snapshot
 
 - Expo React Native app using Expo Router; runtime entry is `expo-router/entry`, not `App.tsx`.
