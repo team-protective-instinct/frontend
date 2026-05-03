@@ -52,6 +52,13 @@ export interface IncidentQueryParams {
   q?: string;
 }
 
+export interface OverviewSummary {
+  pending_count: number;
+  today_count: number;
+  resolved_count: number;
+  recent_pending: IncidentListItem[];
+}
+
 export interface KeyIndicator {
   label: string;
   value: boolean;
