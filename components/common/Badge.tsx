@@ -10,7 +10,7 @@ interface ThreatBadgeProps {
 
 const THREAT_CONFIG: Record<SeverityLevel, { label: string; bg: string; text: string }> = {
   critical: { label: 'CRITICAL', bg: 'bg-threat-critical/20', text: 'text-threat-critical' },
-  high: { label: 'HIGH', bg: 'bg-threat-critical/20', text: 'text-threat-critical' },
+  high: { label: 'HIGH', bg: 'bg-threat-high/20', text: 'text-threat-high' },
   medium: { label: 'MEDIUM', bg: 'bg-threat-warning/20', text: 'text-threat-warning' },
   low: { label: 'LOW', bg: 'bg-threat-dismissed/20', text: 'text-threat-dismissed' },
 };

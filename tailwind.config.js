@@ -14,6 +14,7 @@ module.exports = {
         },
         threat: {
           critical: '#fb565b', // Danger Coral
+          high: '#f97316', // Burnt Orange
           warning: '#ffba00', // Warning Amber
           safe: '#00d992', // Signal Green
           info: '#3b82f6', // Tailwind Blue (for now)
