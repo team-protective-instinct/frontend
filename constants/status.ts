@@ -1,21 +1,22 @@
-import { ThreatLevel, IncidentStatus } from '../types';
+import { SeverityLevel, IncidentStatus } from '../types';
 
-export const THREAT_LEVELS: Record<ThreatLevel, ThreatLevel> = {
-  CRITICAL: 'CRITICAL',
-  WARNING: 'WARNING',
-  NORMAL: 'NORMAL',
+export const SEVERITY_LEVELS: Record<SeverityLevel, SeverityLevel> = {
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
 };
 
 export const INCIDENT_STATUS: Record<IncidentStatus, IncidentStatus> = {
-  PENDING: 'PENDING',
-  UNDER_INVESTIGATION: 'UNDER_INVESTIGATION',
-  RESOLVED: 'RESOLVED',
-  CONTAINED: 'CONTAINED',
-  DISMISSED: 'DISMISSED',
+  analyzing: 'analyzing',
+  pending_review: 'pending_review',
+  resolved: 'resolved',
+  dismissed: 'dismissed',
 };
 
 export const SEVERITY_COLORS = {
-  CRITICAL: '#fb565b',
-  WARNING: '#ffba00',
-  NORMAL: '#00d992',
+  critical: '#fb565b',
+  high: '#fb565b',
+  medium: '#ffba00',
+  low: '#00d992',
 };
