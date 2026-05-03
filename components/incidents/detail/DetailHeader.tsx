@@ -1,23 +1,28 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Incident } from '../../../types';
-import { StatusBadge, ThreatBadge } from '../../common/StatusBadge';
+import type { IncidentDetail } from '../../../types';
 
 interface DetailHeaderProps {
-  incident: Incident;
+  incident: IncidentDetail;
   onClose: () => void;
 }
 
 export function DetailHeader({ incident, onClose }: DetailHeaderProps) {
   return (
-    <View className="px-6 py-5 border-b border-[#3d3a39] flex-row justify-between items-center bg-[#050507]">
-      <View className="flex-1 mr-4">
-        <Text className="text-[10px] font-bold text-[#8b949e] uppercase tracking-[0.2em] mb-1">{incident.id}</Text>
-        <Text className="text-xl font-black text-[#f2f2f2]" numberOfLines={1}>{incident.attack_type}</Text>
+    <View className="border-b border-border bg-bg-primary px-6 py-5">
+      <View className="flex-row items-start justify-between">
+        <View className="mr-4 flex-1">
+          <Text className="text-xl font-black text-text-primary" numberOfLines={1}>
+            {incident.attack_type}
+          </Text>
+          <Text className="mt-1 text-xs text-text-secondary" numberOfLines={1}>
+            {incident.targetName} · {incident.targetIp}
+          </Text>
+        </View>
+        <TouchableOpacity onPress={onClose} className="rounded-full bg-border/20 p-2">
+          <Ionicons name="close" size={24} color="#8b949e" />
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={onClose} className="p-2 rounded-full bg-[#3d3a39]/20">
-        <Ionicons name="close" size={24} color="#8b949e" />
-      </TouchableOpacity>
     </View>
   );
 }

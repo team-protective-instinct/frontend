@@ -1,12 +1,7 @@
 // ─── Threat / Status Types ────────────────────────────────────────────────────
 
-export type ThreatLevel = 'CRITICAL' | 'WARNING' | 'NORMAL';
-export type IncidentStatus =
-  | 'PENDING'
-  | 'UNDER_INVESTIGATION'
-  | 'RESOLVED'
-  | 'CONTAINED'
-  | 'DISMISSED';
+export type SeverityLevel = 'critical' | 'high' | 'medium' | 'low';
+export type IncidentStatus = 'analyzing' | 'pending_review' | 'resolved' | 'dismissed';
 export type ActionType =
   | 'quarantine_file'
   | 'terminate_process'
@@ -20,26 +15,41 @@ export type ApprovalStatus = 'APPROVED' | 'DENIED' | 'PENDING';
 
 // ─── Incident ─────────────────────────────────────────────────────────────────
 
-export interface Incident {
-  id: string;
+export interface IncidentListItem {
+  idx: number;
   attack_type: string; // analysis_result.attack_type
-  threatLevel: ThreatLevel;
+  severity: SeverityLevel;
   confidence_score: number; // 0 ~ 1
   status: IncidentStatus;
   targetIp: string;
   targetName: string;
   detectedAt: string; // ISO 8601
   created_at: string; // ISO 8601
-  mitre_attack_ids: string[];
-  iocs: {
-    attacker_ips: string[];
-    target_uris: string[];
-  };
-  executive_summary: string;
-  detailed_analysis: string; // Markdown
+}
+
+export interface IncidentDetail extends IncidentListItem {
+  attack_ip?: string;
+  target_uris: string[];
+  suspicious_payloads: string[];
+  analysis_summary: string;
   key_indicators: KeyIndicator[];
   raw_log: string;
-  recommended_actions: RecommendedAction[];
+}
+
+export interface IncidentListResponse {
+  items: IncidentListItem[];
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface IncidentQueryParams {
+  page?: number;
+  limit?: number;
+  status?: IncidentStatus | 'ALL';
+  severity?: SeverityLevel | 'ALL';
+  q?: string;
 }
 
 export interface KeyIndicator {
@@ -47,14 +57,6 @@ export interface KeyIndicator {
   value: boolean;
   description: string;
 }
-
-export interface RecommendedAction {
-  id: string;
-  action: string;
-  parameter: string;
-  description: string;
-}
-
 
 // ─── System Health ─────────────────────────────────────────────────────────────
 
@@ -107,7 +109,7 @@ export interface UserProfile {
 export interface NotificationSettings {
   email: string;
   webhookUrl?: string;
-  minSeverity: ThreatLevel;
+  minSeverity: SeverityLevel;
 }
 
 export interface AlarmConfig {

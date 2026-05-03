@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Incident } from '../types';
+import type { IncidentListItem } from '../types';
 
 /**
  * 사건 목록 필터링 및 검색 로직을 담당하는 커스텀 훅
  */
-export function useIncidentFilter(initialIncidents: Incident[]) {
+export function useIncidentFilter(initialIncidents: IncidentListItem[]) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [severityFilter, setSeverityFilter] = useState('ALL');
@@ -13,12 +13,12 @@ export function useIncidentFilter(initialIncidents: Incident[]) {
     return initialIncidents.filter((i) => {
       const matchSearch =
         i.attack_type.toLowerCase().includes(search.toLowerCase()) ||
-        i.id.toLowerCase().includes(search.toLowerCase()) ||
+        String(i.idx).includes(search) ||
         i.targetIp.includes(search);
-      
+
       const matchStatus = statusFilter === 'ALL' || i.status === statusFilter;
-      const matchSeverity = severityFilter === 'ALL' || i.threatLevel === severityFilter;
-      
+      const matchSeverity = severityFilter === 'ALL' || i.severity === severityFilter;
+
       return matchSearch && matchStatus && matchSeverity;
     });
   }, [initialIncidents, search, statusFilter, severityFilter]);

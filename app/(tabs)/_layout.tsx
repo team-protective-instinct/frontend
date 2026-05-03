@@ -12,7 +12,7 @@ import { mockIncidents } from '../../data/mock';
 export default function TabLayout() {
   const isDesktop = useIsDesktop();
   const insets = useSafeAreaInsets();
-  const pendingCount = mockIncidents.filter(i => i.status === 'PENDING').length;
+  const pendingCount = mockIncidents.filter((i) => i.status === 'pending_review').length;
 
   return (
     <View className="flex-1 flex-row bg-[#050507]">
@@ -24,19 +24,21 @@ export default function TabLayout() {
             <MobileHeader />
           </SafeAreaView>
         )}
-        
+
         <Tabs
           screenOptions={{
             headerShown: false,
-            tabBarStyle: isDesktop ? { display: 'none' } : {
-              backgroundColor: '#101010',
-              borderTopWidth: 1,
-              borderTopColor: '#3d3a39',
-              // insets.bottom 값만큼 높이와 패딩을 추가하여 OS 하단 네비게이션 바와 겹치지 않게 함
-              height: 60 + insets.bottom,
-              paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
-              paddingTop: 8,
-            },
+            tabBarStyle: isDesktop
+              ? { display: 'none' }
+              : {
+                  backgroundColor: '#101010',
+                  borderTopWidth: 1,
+                  borderTopColor: '#3d3a39',
+                  // insets.bottom 값만큼 높이와 패딩을 추가하여 OS 하단 네비게이션 바와 겹치지 않게 함
+                  height: 60 + insets.bottom,
+                  paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+                  paddingTop: 8,
+                },
             tabBarActiveTintColor: '#00d992',
             tabBarInactiveTintColor: '#8b949e',
           }}>
@@ -50,7 +52,7 @@ export default function TabLayout() {
                   <View>
                     <Ionicons name={item.icon as any} size={size} color={color} />
                     {item.id === 'incidents' && pendingCount > 0 && (
-                      <View className="absolute -top-1 -right-3 z-10">
+                      <View className="absolute -right-3 -top-1 z-10">
                         <PendingBadge count={pendingCount} />
                       </View>
                     )}
@@ -71,4 +73,3 @@ export default function TabLayout() {
     </View>
   );
 }
-
