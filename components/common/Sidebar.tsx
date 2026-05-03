@@ -9,27 +9,29 @@ import { mockIncidents } from '../../data/mock';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const pendingCount = mockIncidents.filter(i => i.status === 'PENDING').length;
+  const pendingCount = mockIncidents.filter((i) => i.status === 'pending_review').length;
 
   return (
     <View className="w-64 flex-col border-r border-border bg-bg-secondary">
       {/* Brand Header */}
-      <View className="p-6 flex-row items-center">
-        <View className="w-10 h-10 rounded bg-accent items-center justify-center mr-3 shadow-[0_0_15px_rgba(0,217,146,0.3)]">
+      <View className="flex-row items-center p-6">
+        <View className="mr-3 h-10 w-10 items-center justify-center rounded bg-accent shadow-[0_0_15px_rgba(0,217,146,0.3)]">
           <Ionicons name="shield-checkmark" size={24} color="#050507" />
         </View>
         <View>
           <Text className="text-xl font-black tracking-tighter text-text-primary">보호본능</Text>
-          <View className="flex-row items-center mt-0.5">
+          <View className="mt-0.5 flex-row items-center">
             <View className="mr-1.5 mt-0.5">
               <PulseDot />
             </View>
-            <Text className="text-[10px] font-bold uppercase tracking-widest text-accent">AI SOC AGENT</Text>
+            <Text className="text-[10px] font-bold uppercase tracking-widest text-accent">
+              AI SOC AGENT
+            </Text>
           </View>
         </View>
       </View>
 
-      <ScrollView className="flex-1 px-4 mt-4">
+      <ScrollView className="mt-4 flex-1 px-4">
         {NAVIGATION_ITEMS.map((item) => {
           const isActive =
             pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
@@ -38,12 +40,10 @@ export function Sidebar() {
             <Link key={item.id} href={item.href as any} asChild>
               <TouchableOpacity
                 className={`mb-2 flex-row items-center rounded-xl border px-4 py-3.5 ${
-                  isActive
-                    ? 'border-accent/30 bg-accent/10'
-                    : 'border-transparent bg-transparent'
+                  isActive ? 'border-accent/30 bg-accent/10' : 'border-transparent bg-transparent'
                 }`}>
                 <Ionicons
-                  // 활성화 상태일 때는 '-outline'을 제거하여 속이 찬 아이콘을, 
+                  // 활성화 상태일 때는 '-outline'을 제거하여 속이 찬 아이콘을,
                   // 비활성화 상태일 때는 외곽선만 있는 아이콘을 표시합니다.
                   name={isActive ? (item.icon.replace('-outline', '') as any) : (item.icon as any)}
                   size={20}
@@ -92,4 +92,3 @@ export function Sidebar() {
     </View>
   );
 }
-

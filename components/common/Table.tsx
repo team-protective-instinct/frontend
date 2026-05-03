@@ -12,7 +12,8 @@ interface TableProps {
  */
 export function Table({ children, className = '' }: TableProps) {
   return (
-    <View className={`flex-1 bg-bg-secondary border border-border rounded-xl overflow-hidden ${className}`}>
+    <View
+      className={`flex-1 overflow-hidden rounded-xl border border-border bg-bg-secondary ${className}`}>
       {children}
     </View>
   );
@@ -32,9 +33,18 @@ function Header({ children, className = '' }: { children: React.ReactNode; class
 /**
  * 헤더 셀 (제목)
  */
-function Head({ children, width = 'flex-1', className = '' }: { children: React.ReactNode; width?: string; className?: string }) {
+function Head({
+  children,
+  width = 'flex-1',
+  className = '',
+}: {
+  children: React.ReactNode;
+  width?: string;
+  className?: string;
+}) {
   return (
-    <Text className={`${width} text-[10px] font-bold uppercase tracking-widest text-text-muted ${className}`}>
+    <Text
+      className={`${width} text-[10px] font-bold uppercase tracking-widest text-text-muted ${className}`}>
       {children}
     </Text>
   );
@@ -43,14 +53,14 @@ function Head({ children, width = 'flex-1', className = '' }: { children: React.
 /**
  * 테이블 본문 영역 (스크롤 가능, 데이터 없음 처리 포함)
  */
-function Body<T>({ 
-  data, 
-  emptyIcon = 'document-text-outline', 
-  emptyText = 'No data found.', 
-  renderItem 
-}: { 
-  data: T[]; 
-  emptyIcon?: keyof typeof Ionicons.glyphMap; 
+function Body<T>({
+  data,
+  emptyIcon = 'document-text-outline',
+  emptyText = 'No data found.',
+  renderItem,
+}: {
+  data: T[];
+  emptyIcon?: keyof typeof Ionicons.glyphMap;
   emptyText?: string;
   renderItem: (item: T, idx: number, isLast: boolean) => React.ReactNode;
 }) {
@@ -71,14 +81,14 @@ function Body<T>({
 /**
  * 테이블 행 (Row) - 클릭 효과 및 하단 테두리 포함
  */
-function Row({ 
-  children, 
-  isLast, 
-  onPress, 
-  className = '' 
-}: { 
-  children: React.ReactNode; 
-  isLast?: boolean; 
+function Row({
+  children,
+  isLast,
+  onPress,
+  className = '',
+}: {
+  children: React.ReactNode;
+  isLast?: boolean;
   onPress?: () => void;
   className?: string;
 }) {
@@ -92,22 +102,22 @@ function Row({
     );
   }
 
-  return (
-    <View className={baseClass}>
-      {children}
-    </View>
-  );
+  return <View className={baseClass}>{children}</View>;
 }
 
 /**
  * 테이블 셀 (데이터 영역)
  */
-function Cell({ children, width = 'flex-1', className = '' }: { children: React.ReactNode; width?: string; className?: string }) {
-  return (
-    <View className={`${width} ${className}`}>
-      {children}
-    </View>
-  );
+function Cell({
+  children,
+  width = 'flex-1',
+  className = '',
+}: {
+  children: React.ReactNode;
+  width?: string;
+  className?: string;
+}) {
+  return <View className={`${width} ${className}`}>{children}</View>;
 }
 
 // 합성 컴포넌트 등록

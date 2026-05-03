@@ -7,10 +7,10 @@ interface PendingBadgeProps {
 export function PendingBadge({ count }: PendingBadgeProps) {
   if (count === 0) return null;
   const displayCount = count > 99 ? '99+' : count.toString();
-  
+
   return (
-    <View className="bg-threat-critical rounded-full min-w-[18px] h-[18px] justify-center items-center px-1.5">
-      <Text className="text-text-primary text-[10px] font-bold">{displayCount}</Text>
+    <View className="h-[18px] min-w-[18px] items-center justify-center rounded-full bg-threat-critical px-1.5">
+      <Text className="text-[10px] font-bold text-text-primary">{displayCount}</Text>
     </View>
   );
 }
