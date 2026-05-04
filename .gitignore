@@ -10,9 +10,6 @@ npm-debug.*
 *.orig.*
 web-build/
 
-
-
-
 ios
 android
 
@@ -25,3 +22,5 @@ android
 # opencode(omo)
 .sisyphus/
 .playwright-mcp/
+
+.env
