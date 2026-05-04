@@ -43,5 +43,8 @@
     "typescript": "~5.9.2"
   },
   "main": "expo-router/entry",
-  "private": true
+  "private": true,
+  "volta": {
+    "node": "24.15.0"
+  }
 }

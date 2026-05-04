@@ -106,3 +106,27 @@ IPv4 Address. . . . . . . . . . . : 192.168.0.10
 .env 예시:
 
 EXPO_PUBLIC_API_BASE_URL=<http://192.168.0.10:8000>
+
+---
+
+## 🔄 Volta를 통한 버전 관리
+
+이 프로젝트는 [Volta](https://volta.sh/)를 사용하여 Node.js 버전을 관리합니다. Volta를 사용하면 프로젝트에 맞는 Node.js 버전이 자동으로 설정됩니다.
+
+### Volta 설치 (macOS / Linux)
+
+```bash
+curl https://get.volta.sh | bash
+```
+
+### Volta 설치 (Windows)
+
+```powershell
+volta (Windows Package Manager)
+# 또는
+scoop install volta
+```
+
+### 프로젝트 Node.js 버전 설정
+
+프로젝트를 처음 클론한 뒤, 프로젝트 디렉터리로 이동하게 되면 volta가 자동으로 Node.js 버전을 설정합니다.
