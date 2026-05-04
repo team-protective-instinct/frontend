@@ -16,14 +16,7 @@ export default function OverviewScreen() {
   const isDesktop = useIsDesktop();
   const [selectedIncident, setSelectedIncident] = useState<IncidentDetail | null>(null);
 
-  const {
-    pendingCount,
-    todayCount,
-    resolvedCount,
-    recentPending,
-    loading,
-    error,
-  } = useOverview();
+  const { pendingCount, todayCount, resolvedCount, recentPending, loading, error } = useOverview();
 
   const fadeAnim1 = useFadeIn(500, 0);
   const fadeAnim2 = useFadeIn(500, 150);
