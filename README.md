@@ -57,3 +57,52 @@ npm start
 - `npm run ios`: 개발 서버 실행과 동시에 iOS 시뮬레이터로 연결합니다.
 - `npm run lint`: 코드 문법 및 컨벤션 검사 (ESLint & Prettier)
 - `npm run format`: 코드 스타일 자동 정렬 및 수정
+
+### 내 IP 주소 확인 방법
+
+#### macOS
+
+터미널에서 아래 명령어를 실행합니다.
+
+```bash
+ipconfig getifaddr en0
+```
+
+예시 출력:
+192.168.0.10
+
+위 IP를 사용하여 .env 파일을 수정합니다.
+EXPO_PUBLIC_API_BASE_URL=<http://192.168.0.10:8000>
+
+만약 아무 값도 출력되지 않는다면, 아래 명령어로 네트워크 인터페이스를 확인합니다.
+
+```bash
+ifconfig | grep "inet "
+```
+
+출력 중에서 127.0.0.1이 아닌 내부 IP를 사용합니다.
+
+예시:
+
+inet 192.168.0.10 netmask 0xffffff00 broadcast 192.168.0.255
+
+#### Windows
+
+명령 프롬프트 또는 PowerShell에서 아래 명령어를 실행합니다.
+
+```powershell
+ipconfig
+```
+
+출력 중 현재 연결된 네트워크 어댑터를 찾습니다.
+Wi-Fi를 사용 중이라면 보통 아래 항목을 보면 됩니다.
+
+Wireless LAN adapter Wi-Fi:
+
+IPv4 Address. . . . . . . . . . . : 192.168.0.10
+
+여기서 IPv4 Address 값을 사용합니다.
+
+.env 예시:
+
+EXPO_PUBLIC_API_BASE_URL=<http://192.168.0.10:8000>
