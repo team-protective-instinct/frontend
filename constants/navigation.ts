@@ -1,7 +1,6 @@
 export enum RouteName {
   OVERVIEW = 'index',
   INCIDENTS = 'incidents',
-  ASSETS = 'assets',
   PLAYBOOKS = 'playbooks',
   SETTINGS = 'settings',
 }
@@ -25,12 +24,6 @@ export const NAVIGATION_ITEMS: NavItem[] = [
     name: 'Incidents',
     icon: 'alert-circle-outline',
     href: '/incidents',
-  },
-  {
-    id: RouteName.ASSETS,
-    name: 'Assets',
-    icon: 'server-outline',
-    href: '/assets',
   },
   {
     id: RouteName.PLAYBOOKS,
