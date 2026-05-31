@@ -18,6 +18,7 @@ import { useSlideIn } from '../../hooks/useAnimation';
 import { DetailHeader } from './detail/DetailHeader';
 import { ThreatIntelligence } from './detail/ThreatIntelligence';
 import { AnalysisSummary } from './detail/AnalysisSummary';
+import { ResponsePlanSection } from './detail/ResponsePlanSection';
 import { AnalysisSection } from './detail/AnalysisSection';
 import { EvidenceLog } from './detail/EvidenceLog';
 import { DetailActionButtons } from './detail/DetailActionButtons';
@@ -89,6 +90,7 @@ export function IncidentDetailPanel({
           <QuickInfoCards incident={incident} />
           <ThreatIntelligence incident={incident} />
           <AnalysisSummary summary={incident.analysis_summary} />
+          <ResponsePlanSection responsePlan={incident.response_plan} />
           <AnalysisSection incident={incident} />
           <EvidenceLog
             rawLog={incident.raw_log}

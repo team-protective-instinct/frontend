@@ -13,6 +13,21 @@ export type ActionType =
 export type SystemComponentStatus = 'connected' | 'degraded' | 'disconnected';
 export type ApprovalStatus = 'APPROVED' | 'DENIED' | 'PENDING';
 
+export interface ResponsePlan {
+  idx: number;
+  incident_idx: number;
+  thread_id: string;
+  summary: string;
+  rationale: string;
+  plan_text: string;
+  status: ApprovalStatus;
+  approved_at?: string | null;
+  denied_at?: string | null;
+  denied_reason?: string | null;
+  created_at: string;
+  modified_at: string;
+}
+
 // ─── Incident ─────────────────────────────────────────────────────────────────
 
 export interface IncidentListItem {
@@ -32,6 +47,7 @@ export interface IncidentDetail extends IncidentListItem {
   target_uris: string[];
   suspicious_payloads: string[];
   analysis_summary: string;
+  response_plan?: ResponsePlan | null;
   key_indicators: KeyIndicator[];
   raw_log: string;
 }
