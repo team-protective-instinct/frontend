@@ -97,13 +97,11 @@ export default function PlaybooksScreen() {
             <Text className="ml-3 text-sm font-bold text-text-secondary">Loading playbooks...</Text>
           </View>
         )}
-
         {error && (
           <View className="mb-4 rounded-xl border border-threat-critical/40 bg-threat-critical/10 px-4 py-3">
             <Text className="text-sm font-bold text-threat-critical">{error}</Text>
           </View>
         )}
-
         {/* Knowledge Base List (Table 추상화 적용) */}
         <Table className="mb-4">
           {isDesktop && (
