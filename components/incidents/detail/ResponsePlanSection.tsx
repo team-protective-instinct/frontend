@@ -27,7 +27,7 @@ export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) 
   const statusStyle = responsePlan ? statusStyleMap[responsePlan.status] : null;
 
   return (
-    <View className="rounded-2xl border border-border bg-bg-secondary p-5">
+    <View className="mb-6 rounded-2xl border border-border bg-bg-secondary p-5">
       <View className="mb-4 flex-row items-center justify-between">
         <View className="flex-row items-center">
           <View className="mr-3 h-9 w-9 items-center justify-center rounded-xl bg-accent/10">
