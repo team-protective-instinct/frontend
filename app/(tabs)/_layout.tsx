@@ -7,12 +7,12 @@ import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { MobileHeader } from '../../components/common/MobileHeader';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PendingBadge } from '../../components/common/PendingBadge';
-import { mockIncidents } from '../../data/mock';
+import { useOverview } from '../../hooks/useOverview';
 
 export default function TabLayout() {
   const isDesktop = useIsDesktop();
   const insets = useSafeAreaInsets();
-  const pendingCount = mockIncidents.filter((i) => i.status === 'pending_review').length;
+  const { pendingCount } = useOverview();
 
   return (
     <View className="flex-1 flex-row bg-[#050507]">

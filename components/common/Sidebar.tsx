@@ -5,11 +5,11 @@ import { NAVIGATION_ITEMS, SETTINGS_NAV_ITEM } from '../../constants/navigation'
 
 import { PulseDot } from './PulseDot';
 import { PendingBadge } from './PendingBadge';
-import { mockIncidents } from '../../data/mock';
+import { useOverview } from '../../hooks/useOverview';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const pendingCount = mockIncidents.filter((i) => i.status === 'pending_review').length;
+  const { pendingCount } = useOverview();
 
   return (
     <View className="w-64 flex-col border-r border-border bg-bg-secondary">
