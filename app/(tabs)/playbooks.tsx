@@ -1,58 +1,65 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { useMemo, useState } from 'react';
+import { View, Text, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { mockPlaybooks } from '../../data/mock';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { usePlaybooks } from '../../hooks/usePlaybooks';
 import { PlaybookPreviewPanel } from '../../components/playbooks/PlaybookPreviewPanel';
 import { Table } from '../../components/common/Table';
-import { Playbook } from '../../types';
+import type { PlaybookListItem } from '../../types';
+
+type IconName = keyof typeof Ionicons.glyphMap;
+
+function getFileType(sourceFile: string) {
+  const extension = sourceFile.split('.').pop()?.toUpperCase();
+  return extension || 'MD';
+}
+
+function getStatusBadge(isActive: boolean): {
+  label: string;
+  color: string;
+  bg: string;
+  textColor: string;
+  icon: IconName;
+} {
+  if (isActive) {
+    return {
+      label: 'INDEXED',
+      color: '#00d992',
+      bg: 'bg-threat-safe/10',
+      textColor: 'text-threat-safe',
+      icon: 'checkmark-circle',
+    };
+  }
+
+  return {
+    label: 'INACTIVE',
+    color: '#8b949e',
+    bg: 'bg-threat-dismissed/10',
+    textColor: 'text-text-muted',
+    icon: 'pause-circle',
+  };
+}
 
 export default function PlaybooksScreen() {
   const isDesktop = useIsDesktop();
+  const { playbooks, loading, error } = usePlaybooks();
   const [search, setSearch] = useState('');
-  const [selectedPlaybook, setSelectedPlaybook] = useState<Playbook | null>(null);
+  const [selectedPlaybook, setSelectedPlaybook] = useState<PlaybookListItem | null>(null);
 
-  const filteredPlaybooks = mockPlaybooks.filter((pb) =>
-    pb.fileName.toLowerCase().includes(search.toLowerCase())
+  const filteredPlaybooks = useMemo(
+    () =>
+      playbooks.filter((playbook) => {
+        const keyword = search.trim().toLowerCase();
+        if (!keyword) return true;
+
+        return [playbook.title, playbook.source_file, playbook.tactic]
+          .join(' ')
+          .toLowerCase()
+          .includes(keyword);
+      }),
+    [playbooks, search]
   );
-
-  const getSyncBadge = (status: string) => {
-    switch (status) {
-      case 'synced':
-        return {
-          label: 'AI SYNCED',
-          color: '#00d992',
-          bg: 'bg-threat-safe/10',
-          textColor: 'text-threat-safe',
-          icon: 'checkmark-circle',
-        };
-      case 'vectorizing':
-        return {
-          label: 'VECTORIZING',
-          color: '#ffba00',
-          bg: 'bg-threat-warning/10',
-          textColor: 'text-threat-warning',
-          icon: 'sync',
-        };
-      case 'extracting':
-        return {
-          label: 'EXTRACTING',
-          color: '#3b82f6',
-          bg: 'bg-threat-info/10',
-          textColor: 'text-threat-info',
-          icon: 'document-text',
-        };
-      default:
-        return {
-          label: 'UNKNOWN',
-          color: '#8b949e',
-          bg: 'bg-threat-dismissed/10',
-          textColor: 'text-text-muted',
-          icon: 'help-circle',
-        };
-    }
-  };
 
   return (
     <SafeAreaView className="flex-1 bg-bg-primary" edges={isDesktop ? [] : ['bottom']}>
@@ -65,11 +72,11 @@ export default function PlaybooksScreen() {
               PLAYBOOKS
             </Text>
             <Text className="mt-1 text-sm font-medium text-text-muted">
-              AI RAG Knowledge Base for Response
+              Indexed RAG Knowledge Base for Response
             </Text>
           </View>
 
-          <View className="w-full flex-row items-center gap-3 lg:w-auto">
+          <View className="w-full flex-row items-center lg:w-auto">
             <View
               className={`${isDesktop ? 'w-80' : 'flex-1'} flex-row items-center rounded-xl border border-border bg-bg-secondary px-4 py-2.5`}>
               <Ionicons name="search" size={18} color="#8b949e" />
@@ -79,28 +86,22 @@ export default function PlaybooksScreen() {
                 value={search}
                 onChangeText={setSearch}
                 className="ml-3 flex-1 text-sm text-text-primary"
-                style={{ outlineStyle: 'none' } as any}
               />
             </View>
-
-            {isDesktop && (
-              <TouchableOpacity className="flex-row items-center rounded-xl bg-accent px-6 py-3 shadow-[0_0_15px_rgba(0,217,146,0.3)]">
-                <Ionicons name="cloud-upload" size={20} color="#050507" />
-                <Text className="ml-2 text-sm font-black text-bg-primary">UPLOAD PLAYBOOK</Text>
-              </TouchableOpacity>
-            )}
           </View>
         </View>
 
-        {/* Dropzone (PC only) */}
-        {isDesktop && (
-          <TouchableOpacity className="mb-8 h-40 items-center justify-center rounded-2xl border-2 border-dashed border-border bg-bg-secondary/30 transition-all hover:border-accent/50 hover:bg-accent/5">
-            <Ionicons name="document-attach-outline" size={40} color="#3d3a39" />
-            <Text className="mt-4 text-sm font-bold text-text-secondary">
-              Drag & drop security procedures (PDF, DOCX, MD, TXT)
-            </Text>
-            <Text className="mt-2 text-[10px] text-text-muted">Maximum file size: 50MB</Text>
-          </TouchableOpacity>
+        {loading && (
+          <View className="mb-4 flex-row items-center rounded-xl border border-border bg-bg-secondary px-4 py-3">
+            <ActivityIndicator size="small" color="#00d992" />
+            <Text className="ml-3 text-sm font-bold text-text-secondary">Loading playbooks...</Text>
+          </View>
+        )}
+
+        {error && (
+          <View className="mb-4 rounded-xl border border-threat-critical/40 bg-threat-critical/10 px-4 py-3">
+            <Text className="text-sm font-bold text-threat-critical">{error}</Text>
+          </View>
         )}
 
         {/* Knowledge Base List (Table 추상화 적용) */}
@@ -109,10 +110,9 @@ export default function PlaybooksScreen() {
             <Table.Header>
               <Table.Head width="w-12">Type</Table.Head>
               <Table.Head>Document Name</Table.Head>
-              <Table.Head width="w-32">Size</Table.Head>
+              <Table.Head width="w-40">Tactic</Table.Head>
               <Table.Head width="w-48">Status</Table.Head>
-              <Table.Head width="w-40">Uploaded</Table.Head>
-              <Table.Head width="w-12"> </Table.Head>
+              <Table.Head width="w-40">Updated</Table.Head>
             </Table.Header>
           )}
 
@@ -120,23 +120,27 @@ export default function PlaybooksScreen() {
             data={filteredPlaybooks}
             emptyIcon="document-text-outline"
             emptyText="No documents found."
-            renderItem={(pb, idx, isLast) => {
-              const badge = getSyncBadge(pb.syncStatus);
+            renderItem={(playbook, idx, isLast) => {
+              const badge = getStatusBadge(playbook.is_active);
               return (
-                <Table.Row key={pb.id} onPress={() => setSelectedPlaybook(pb)} isLast={isLast}>
+                <Table.Row
+                  key={playbook.idx}
+                  onPress={() => setSelectedPlaybook(playbook)}
+                  isLast={isLast}>
                   <Table.Cell width="w-12">
                     <View className="h-8 w-8 items-center justify-center rounded border border-border bg-bg-elevated">
-                      <Text className="text-[9px] font-black text-accent">{pb.fileType}</Text>
+                      <Text className="text-[9px] font-black text-accent">
+                        {getFileType(playbook.source_file)}
+                      </Text>
                     </View>
                   </Table.Cell>
 
                   <Table.Cell>
-                    <Text className="text-sm font-bold text-text-primary">{pb.fileName}</Text>
+                    <Text className="text-sm font-bold text-text-primary">{playbook.title}</Text>
+                    <Text className="mt-1 text-[10px] text-text-muted">{playbook.source_file}</Text>
                     {!isDesktop && (
                       <View className="mt-1 flex-row items-center">
-                        <Text className="text-[10px] text-text-muted">
-                          {(pb.fileSize / 1024 / 1024).toFixed(2)} MB
-                        </Text>
+                        <Text className="text-[10px] text-text-muted">{playbook.tactic}</Text>
                         <Text className="mx-2 text-border">•</Text>
                         <Text className={`text-[10px] font-bold ${badge.textColor}`}>
                           {badge.label}
@@ -147,15 +151,15 @@ export default function PlaybooksScreen() {
 
                   {isDesktop && (
                     <>
-                      <Table.Cell width="w-32">
-                        <Text className="font-mono text-xs text-text-secondary">
-                          {(pb.fileSize / 1024 / 1024).toFixed(2)} MB
+                      <Table.Cell width="w-40">
+                        <Text className="text-xs font-bold uppercase tracking-wide text-text-secondary">
+                          {playbook.tactic}
                         </Text>
                       </Table.Cell>
                       <Table.Cell width="w-48">
                         <View
                           className={`flex-row items-center self-start rounded px-2 py-1 ${badge.bg}`}>
-                          <Ionicons name={badge.icon as any} size={12} color={badge.color} />
+                          <Ionicons name={badge.icon} size={12} color={badge.color} />
                           <Text className={`ml-2 text-[10px] font-black ${badge.textColor}`}>
                             {badge.label}
                           </Text>
@@ -163,13 +167,8 @@ export default function PlaybooksScreen() {
                       </Table.Cell>
                       <Table.Cell width="w-40">
                         <Text className="text-xs text-text-muted">
-                          {new Date(pb.uploadedAt).toLocaleDateString()}
+                          {new Date(playbook.modified_at).toLocaleDateString()}
                         </Text>
-                      </Table.Cell>
-                      <Table.Cell width="w-12" className="items-end">
-                        <TouchableOpacity className="p-2">
-                          <Ionicons name="trash-outline" size={18} color="#fb565b" opacity={0.6} />
-                        </TouchableOpacity>
                       </Table.Cell>
                     </>
                   )}

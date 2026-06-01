@@ -7,14 +7,17 @@ import {
   Animated,
   Modal,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { Playbook } from '../../types';
+import type { PlaybookListItem } from '../../types';
+import { fetchPlaybookDetail } from '../../services/playbooks';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { useSlideIn } from '../../hooks/useAnimation';
 
 interface PlaybookPreviewPanelProps {
-  playbook: Playbook | null;
+  playbook: PlaybookListItem | null;
   onClose: () => void;
   visible: boolean;
 }
@@ -22,6 +25,17 @@ interface PlaybookPreviewPanelProps {
 export function PlaybookPreviewPanel({ playbook, onClose, visible }: PlaybookPreviewPanelProps) {
   const isDesktop = useIsDesktop();
   const { slideAnim, slide } = useSlideIn(Dimensions.get('window').width, 0, 300);
+  const playbookIdx = playbook?.idx;
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['playbook', playbookIdx],
+    queryFn: () => {
+      if (playbookIdx === undefined) {
+        throw new Error('Missing playbook index.');
+      }
+      return fetchPlaybookDetail(playbookIdx);
+    },
+    enabled: visible && playbookIdx !== undefined,
+  });
 
   useEffect(() => {
     if (visible && isDesktop) {
@@ -29,17 +43,22 @@ export function PlaybookPreviewPanel({ playbook, onClose, visible }: PlaybookPre
     } else {
       slide(Dimensions.get('window').width);
     }
-  }, [visible, isDesktop]);
+  }, [visible, isDesktop, slide]);
 
   if (!playbook) return null;
 
+  const detail = data;
+  const errorMessage = error instanceof Error ? error.message : 'Failed to load playbook detail.';
+
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View className="flex-1 flex-row justify-end bg-black/60">
+    <Modal visible={visible} animationType="none" onRequestClose={onClose}>
+      <View className="flex-1 flex-row justify-end bg-[#050507]">
         <TouchableOpacity className="flex-1" onPress={onClose} activeOpacity={1} />
         <Animated.View
           style={{
             width: isDesktop ? 600 : '100%',
+            height: '100%',
+            backgroundColor: '#101010',
             transform: [{ translateX: slideAnim }],
             boxShadow: '-15px 0 40px rgba(0,0,0,0.6)',
           }}
@@ -47,51 +66,68 @@ export function PlaybookPreviewPanel({ playbook, onClose, visible }: PlaybookPre
           <View className="flex-row items-center justify-between border-b border-[#3d3a39] bg-[#050507] px-6 py-5">
             <View>
               <Text className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#8b949e]">
-                {playbook.fileType} Document
+                {playbook.tactic} Playbook
               </Text>
-              <Text className="text-lg font-black text-[#f2f2f2]">{playbook.fileName}</Text>
+              <Text className="text-lg font-black text-[#f2f2f2]">{playbook.title}</Text>
+              <Text className="mt-1 text-[10px] text-[#8b949e]">{playbook.source_file}</Text>
             </View>
             <TouchableOpacity onPress={onClose} className="rounded-full bg-[#3d3a39]/20 p-2">
               <Ionicons name="close" size={24} color="#8b949e" />
             </TouchableOpacity>
           </View>
 
-          <ScrollView className="flex-1 p-8">
-            <View className="shadow-inner min-h-[500px] rounded-2xl border border-[#3d3a39] bg-[#050507] p-8">
-              <Text className="text-sm leading-7 text-[#b8b3b0]">
-                {/* Mock Content */}
-                <Text className="mb-6 text-xl font-black text-[#f2f2f2]">
-                  Standard Operating Procedure: {playbook.fileName.split('.')[0]}
-                </Text>
-                {'\n\n'}
-                This document provides the standard AI-driven response procedure for relevant
-                security incidents.
-                {'\n\n'}
-                <Text className="font-bold text-[#00d992]">1. Detection & Identification</Text>
-                {'\n'}
-                The AI Agent utilizes high-confidence signatures from this playbook to identify
-                lateral movement and unauthorized access attempts.
-                {'\n\n'}
-                <Text className="font-bold text-[#00d992]">2. Containment Strategy</Text>
-                {'\n'}
-                Upon confirmation, the recommended actions include immediate IP blocking and process
-                termination based on the parameters defined in Section 4.
-                {'\n\n'}
-                <Text className="font-bold text-[#b8b3b0]">3. Recovery & Post-Incident</Text>
-                {'\n'}
-                Review logs and update the Vector DB with any new indicators of compromise (IoC)
-                found during the analysis.
-              </Text>
-            </View>
-          </ScrollView>
+          <ScrollView className="flex-1 bg-[#101010] p-8">
+            {isLoading && (
+              <View className="min-h-[300px] items-center justify-center rounded-2xl border border-[#3d3a39] bg-[#050507] p-8">
+                <ActivityIndicator size="large" color="#00d992" />
+                <Text className="mt-4 text-sm font-bold text-[#b8b3b0]">Loading playbook...</Text>
+              </View>
+            )}
 
-          <View className="border-t border-[#3d3a39] bg-[#050507] p-6">
-            <TouchableOpacity className="w-full items-center rounded-2xl bg-[#00d992] py-4 shadow-[0_0_15px_rgba(0,217,146,0.3)]">
-              <Text className="text-sm font-black uppercase text-[#050507]">
-                Re-Vectorize Document
-              </Text>
-            </TouchableOpacity>
-          </View>
+            {isError && (
+              <View className="rounded-2xl border border-[#fb565b]/40 bg-[#fb565b]/10 p-6">
+                <Text className="text-sm font-bold text-[#fb565b]">{errorMessage}</Text>
+              </View>
+            )}
+
+            {!isLoading && !isError && detail && (
+              <View className="gap-4">
+                {detail.recommended_action_hints.length > 0 && (
+                  <View className="rounded-2xl border border-[#00d992]/30 bg-[#00d992]/5 p-5">
+                    <Text className="mb-3 text-[10px] font-black uppercase tracking-widest text-[#00d992]">
+                      Recommended Action Hints
+                    </Text>
+                    {detail.recommended_action_hints.map((hint) => (
+                      <View key={hint} className="mb-2 flex-row items-start">
+                        <Ionicons name="checkmark-circle" size={14} color="#00d992" />
+                        <Text className="ml-2 flex-1 text-xs leading-5 text-[#b8b3b0]">{hint}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {detail.chunks.length === 0 ? (
+                  <View className="min-h-[300px] items-center justify-center rounded-2xl border border-[#3d3a39] bg-[#050507] p-8">
+                    <Ionicons name="document-text-outline" size={40} color="#3d3a39" />
+                    <Text className="mt-4 text-sm font-bold text-[#8b949e]">
+                      No indexed content found.
+                    </Text>
+                  </View>
+                ) : (
+                  detail.chunks.map((chunk, index) => (
+                    <View
+                      key={chunk.idx}
+                      className="shadow-inner rounded-2xl border border-[#3d3a39] bg-[#050507] p-6">
+                      <Text className="mb-4 text-[10px] font-black uppercase tracking-widest text-[#8b949e]">
+                        {chunk.section || `Chunk ${index + 1}`}
+                      </Text>
+                      <Text className="text-sm leading-7 text-[#b8b3b0]">{chunk.content}</Text>
+                    </View>
+                  ))
+                )}
+              </View>
+            )}
+          </ScrollView>
         </Animated.View>
       </View>
     </Modal>
