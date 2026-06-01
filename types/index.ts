@@ -93,6 +93,33 @@ export interface Playbook {
   syncStatus: 'extracting' | 'vectorizing' | 'synced';
 }
 
+export interface PlaybookListItem {
+  idx: number;
+  title: string;
+  tactic: string;
+  source_file: string;
+  recommended_action_hints: string[];
+  source_refs: Record<string, unknown>[];
+  is_active: boolean;
+  created_at: string;
+  modified_at: string;
+}
+
+export interface PlaybookChunk {
+  idx: number;
+  playbook_id: number;
+  chunk_id: string;
+  section: string | null;
+  content: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  modified_at: string;
+}
+
+export interface PlaybookDetail extends PlaybookListItem {
+  chunks: PlaybookChunk[];
+}
+
 // ─── Settings ─────────────────────────────────────────────────────────────────
 
 export type OsType = 'Linux' | 'Windows' | 'MacOS' | 'Unknown';
