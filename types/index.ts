@@ -59,6 +59,13 @@ export interface IncidentListItem {
   created_at: string; // ISO 8601
 }
 
+export interface IncidentRawLog {
+  idx: number;
+  source_type: 'webhook' | 'elasticsearch_mcp' | string;
+  raw_payload: Record<string, unknown> | null;
+  created_at: string;
+}
+
 export interface IncidentDetail extends IncidentListItem {
   attack_ip?: string;
   target_uris: string[];
@@ -66,7 +73,7 @@ export interface IncidentDetail extends IncidentListItem {
   analysis_summary: string;
   response_plan?: ResponsePlan | null;
   key_indicators: KeyIndicator[];
-  raw_log: string;
+  raw_logs: IncidentRawLog[];
 }
 
 export interface IncidentListResponse {
