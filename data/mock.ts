@@ -65,8 +65,23 @@ export const mockIncidents: IncidentDetail[] = [
       },
       { label: 'Previous Attempts', value: false, description: 'No prior attempts from this IP' },
     ],
-    raw_log:
-      '{"timestamp":"2026-04-22T17:08:00Z","method":"POST","path":"/api/v1/comments","body":{"content":"PHNjcmlwdD5mZXRjaCgiaHR0cDovL2V2aWwuY29tLz8iK2RvY3VtZW50LmNvb2tpZSk8L3NjcmlwdD4="},"headers":{"x-forwarded-for":"45.33.22.11"}}',
+    raw_logs: [
+      {
+        idx: 101,
+        source_type: 'webhook',
+        created_at: '2026-04-22T17:08:00Z',
+        raw_payload: {
+          timestamp: '2026-04-22T17:08:00Z',
+          method: 'POST',
+          path: '/api/v1/comments',
+          body: {
+            content:
+              'PHNjcmlwdD5mZXRjaCgiaHR0cDovL2V2aWwuY29tLz8iK2RvY3VtZW50LmNvb2tpZSk8L3NjcmlwdD4=',
+          },
+          headers: { 'x-forwarded-for': '45.33.22.11' },
+        },
+      },
+    ],
   },
   {
     idx: 2,
@@ -87,8 +102,17 @@ export const mockIncidents: IncidentDetail[] = [
       { label: 'SQLi Pattern', value: true, description: 'Known SQL injection pattern detected' },
       { label: 'High Frequency', value: true, description: 'Potential automated scanning' },
     ],
-    raw_log:
-      '103.45.67.89 - - [22/Apr/2026:16:45:00 +0000] "POST /login.php HTTP/1.1" 200 - "username=admin\' OR \'1\'=\'1"',
+    raw_logs: [
+      {
+        idx: 102,
+        source_type: 'webhook',
+        created_at: '2026-04-22T16:45:00Z',
+        raw_payload: {
+          message:
+            '103.45.67.89 - - [22/Apr/2026:16:45:00 +0000] "POST /login.php HTTP/1.1" 200 - "username=admin\' OR \'1\'=\'1"',
+        },
+      },
+    ],
   },
   {
     idx: 3,
@@ -106,7 +130,14 @@ export const mockIncidents: IncidentDetail[] = [
     analysis_summary:
       'A PHP file was uploaded to a directory intended for images only. AI analysis suggests it might be a simple web shell.',
     key_indicators: [],
-    raw_log: 'inotify_event: CREATE profile.php in /var/www/uploads',
+    raw_logs: [
+      {
+        idx: 103,
+        source_type: 'webhook',
+        created_at: '2026-04-22T15:20:00Z',
+        raw_payload: { message: 'inotify_event: CREATE profile.php in /var/www/uploads' },
+      },
+    ],
   },
   {
     idx: 4,
@@ -123,8 +154,17 @@ export const mockIncidents: IncidentDetail[] = [
     suspicious_payloads: [],
     analysis_summary: 'Multiple failed SSH login attempts from an internal IP address.',
     key_indicators: [],
-    raw_log:
-      'Apr 22 14:10:01 gateway sshd[1234]: Failed password for root from 192.168.1.200 port 5678 ssh2',
+    raw_logs: [
+      {
+        idx: 104,
+        source_type: 'webhook',
+        created_at: '2026-04-22T14:10:00Z',
+        raw_payload: {
+          message:
+            'Apr 22 14:10:01 gateway sshd[1234]: Failed password for root from 192.168.1.200 port 5678 ssh2',
+        },
+      },
+    ],
   },
   {
     idx: 5,
@@ -142,7 +182,17 @@ export const mockIncidents: IncidentDetail[] = [
     analysis_summary:
       'Access attempt to sensitive administrative endpoint without a valid authorization token.',
     key_indicators: [],
-    raw_log: '203.0.113.5 - - [22/Apr/2026:13:00:00 +0000] "GET /admin/config/dump HTTP/1.1" 403 0',
+    raw_logs: [
+      {
+        idx: 105,
+        source_type: 'webhook',
+        created_at: '2026-04-22T13:00:00Z',
+        raw_payload: {
+          message:
+            '203.0.113.5 - - [22/Apr/2026:13:00:00 +0000] "GET /admin/config/dump HTTP/1.1" 403 0',
+        },
+      },
+    ],
   },
 ];
 

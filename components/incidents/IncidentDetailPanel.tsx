@@ -93,7 +93,7 @@ export function IncidentDetailPanel({
           <ResponsePlanSection responsePlan={incident.response_plan} />
           <AnalysisSection incident={incident} />
           <EvidenceLog
-            rawLog={incident.raw_log}
+            rawLogs={incident.raw_logs}
             isDesktop={isDesktop}
             logModalVisible={logModalVisible}
             setLogModalVisible={setLogModalVisible}
