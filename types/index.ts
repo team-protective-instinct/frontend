@@ -11,19 +11,36 @@ export type ActionType =
   | 'isolate_host'
   | 'kill_connection';
 export type SystemComponentStatus = 'connected' | 'degraded' | 'disconnected';
-export type ApprovalStatus = 'APPROVED' | 'DENIED' | 'PENDING';
+export type ResponsePlanStatus =
+  | 'pending'
+  | 'approved'
+  | 'denied'
+  | 'executing'
+  | 'executed'
+  | 'failed';
+export type ResponsePlanActionStatus = 'pending' | 'executing' | 'executed' | 'failed' | 'skipped';
+
+export interface ResponsePlanAction {
+  idx: number;
+  response_plan_idx: number;
+  execution_order: number;
+  tool_name: string;
+  arguments: Record<string, unknown>;
+  reason?: string | null;
+  status: ResponsePlanActionStatus;
+  result?: Record<string, unknown> | null;
+  created_at: string;
+  modified_at: string;
+}
 
 export interface ResponsePlan {
   idx: number;
   incident_idx: number;
-  thread_id: string;
+  thread_id?: string | null;
   summary: string;
-  rationale: string;
-  plan_text: string;
-  status: ApprovalStatus;
-  approved_at?: string | null;
-  denied_at?: string | null;
+  status: ResponsePlanStatus;
   denied_reason?: string | null;
+  actions: ResponsePlanAction[];
   created_at: string;
   modified_at: string;
 }

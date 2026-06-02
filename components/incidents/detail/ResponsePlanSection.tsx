@@ -1,27 +1,52 @@
-
-
 import { Ionicons } from '@expo/vector-icons';
 import { Text, View } from 'react-native';
-import type { ResponsePlan } from '../../../types';
+import { MarkdownText } from '../../common/MarkdownText';
+import type { ResponsePlan, ResponsePlanActionStatus, ResponsePlanStatus } from '../../../types';
 
 interface ResponsePlanSectionProps {
   responsePlan?: ResponsePlan | null;
 }
 
-const statusStyleMap: Record<ResponsePlan['status'], { label: string; className: string }> = {
-  APPROVED: {
+const statusStyleMap: Record<ResponsePlanStatus, { label: string; className: string }> = {
+  approved: {
     label: 'APPROVED',
     className: 'bg-threat-safe/10 text-threat-safe',
   },
-  DENIED: {
+  denied: {
     label: 'DENIED',
     className: 'bg-threat-critical/10 text-threat-critical',
   },
-  PENDING: {
+  pending: {
     label: 'PENDING',
     className: 'bg-threat-warning/10 text-threat-warning',
   },
+  executing: {
+    label: 'EXECUTING',
+    className: 'bg-accent/10 text-accent',
+  },
+  executed: {
+    label: 'EXECUTED',
+    className: 'bg-threat-safe/10 text-threat-safe',
+  },
+  failed: {
+    label: 'FAILED',
+    className: 'bg-threat-critical/10 text-threat-critical',
+  },
 };
+
+const actionStatusStyleMap: Record<ResponsePlanActionStatus, { label: string; className: string }> =
+  {
+    pending: { label: 'PENDING', className: 'bg-threat-warning/10 text-threat-warning' },
+    executing: { label: 'EXECUTING', className: 'bg-accent/10 text-accent' },
+    executed: { label: 'EXECUTED', className: 'bg-threat-safe/10 text-threat-safe' },
+    failed: { label: 'FAILED', className: 'bg-threat-critical/10 text-threat-critical' },
+    skipped: { label: 'SKIPPED', className: 'bg-bg-primary text-text-muted' },
+  };
+
+function formatJson(value: Record<string, unknown> | null | undefined) {
+  if (!value || Object.keys(value).length === 0) return null;
+  return JSON.stringify(value, null, 2);
+}
 
 export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) {
   const statusStyle = responsePlan ? statusStyleMap[responsePlan.status] : null;
@@ -56,7 +81,8 @@ export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) 
             No response plan generated yet.
           </Text>
           <Text className="mt-2 text-xs leading-5 text-text-muted">
-            Once the response planning agent creates a plan for this incident, its summary and detailed procedure will appear here.
+            Once the response planning agent creates a plan for this incident, its summary and
+            defensive actions will appear here.
           </Text>
         </View>
       ) : (
@@ -65,23 +91,77 @@ export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) 
             <Text className="mb-2 text-xs font-black uppercase tracking-wider text-text-muted">
               Summary
             </Text>
-            <Text className="text-sm leading-6 text-text-primary">{responsePlan.summary}</Text>
+            <MarkdownText>{responsePlan.summary}</MarkdownText>
           </View>
 
           <View>
             <Text className="mb-2 text-xs font-black uppercase tracking-wider text-text-muted">
-              Response Procedure
+              Defensive Actions
             </Text>
-            <View className="rounded-xl bg-bg-primary/50 p-4">
-              <Text className="text-sm leading-6 text-text-secondary">{responsePlan.plan_text}</Text>
-            </View>
-          </View>
+            {responsePlan.actions.length === 0 ? (
+              <View className="rounded-xl border border-dashed border-border bg-bg-primary/40 p-4">
+                <Text className="text-xs leading-5 text-text-muted">
+                  No executable defensive actions were generated for this plan.
+                </Text>
+              </View>
+            ) : (
+              <View className="gap-3">
+                {responsePlan.actions
+                  .slice()
+                  .sort((a, b) => a.execution_order - b.execution_order) // execution_order 기준으로 정렬
+                  .map((action) => {
+                    const actionStatus = actionStatusStyleMap[action.status];
+                    const argumentsText = formatJson(action.arguments);
+                    const resultText = formatJson(action.result);
 
-          <View>
-            <Text className="mb-2 text-xs font-black uppercase tracking-wider text-text-muted">
-              Rationale
-            </Text>
-            <Text className="text-sm leading-6 text-text-secondary">{responsePlan.rationale}</Text>
+                    return (
+                      <View key={action.idx} className="rounded-xl bg-bg-primary/50 p-4">
+                        <View className="mb-3 flex-row items-start justify-between gap-3">
+                          <View className="flex-1">
+                            <Text className="text-[10px] font-black uppercase text-text-muted">
+                              Step {action.execution_order}
+                            </Text>
+                            <Text className="mt-1 text-sm font-bold capitalize text-text-primary">
+                              {action.tool_name}
+                            </Text>
+                          </View>
+                          <View
+                            className={`rounded-full px-2.5 py-1 ${actionStatus.className.split(' ')[0]}`}>
+                            <Text
+                              className={`text-[9px] font-black ${actionStatus.className.split(' ')[1]}`}>
+                              {actionStatus.label}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {action.reason ? <MarkdownText muted>{action.reason}</MarkdownText> : null}
+
+                        {argumentsText ? (
+                          <View className="mt-3 rounded-lg border border-border bg-bg-secondary p-3">
+                            <Text className="mb-1 text-[10px] font-black uppercase text-text-muted">
+                              Arguments
+                            </Text>
+                            <Text className="font-mono text-[11px] leading-5 text-text-secondary">
+                              {argumentsText}
+                            </Text>
+                          </View>
+                        ) : null}
+
+                        {resultText ? (
+                          <View className="mt-3 rounded-lg border border-border bg-bg-secondary p-3">
+                            <Text className="mb-1 text-[10px] font-black uppercase text-text-muted">
+                              Result
+                            </Text>
+                            <Text className="font-mono text-[11px] leading-5 text-text-secondary">
+                              {resultText}
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+              </View>
+            )}
           </View>
 
           <View className="flex-row flex-wrap gap-3 border-t border-border pt-4">
