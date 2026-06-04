@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { MarkdownText } from '../../common/MarkdownText';
 import type { ResponsePlan, ResponsePlanActionStatus, ResponsePlanStatus } from '../../../types';
 
@@ -43,6 +43,69 @@ const actionStatusStyleMap: Record<ResponsePlanActionStatus, { label: string; cl
     skipped: { label: 'SKIPPED', className: 'bg-bg-primary text-text-muted' },
   };
 
+const statusBannerMap: Record<
+  ResponsePlanStatus,
+  {
+    icon: keyof typeof Ionicons.glyphMap;
+    title: string;
+    description: string;
+    containerClassName: string;
+    iconClassName: string;
+    iconColor: string;
+    showSpinner?: boolean;
+  }
+> = {
+  pending: {
+    icon: 'alert-circle-outline',
+    title: 'Approval required',
+    description: 'Review this response plan, then approve execution or deny it with a reason.',
+    containerClassName: 'border-threat-warning/30 bg-threat-warning/10',
+    iconClassName: 'bg-threat-warning/10',
+    iconColor: '#f59e0b',
+  },
+  approved: {
+    icon: 'checkmark-circle-outline',
+    title: 'Response plan approved',
+    description: 'Execution has been approved and will begin shortly.',
+    containerClassName: 'border-accent/30 bg-accent/10',
+    iconClassName: 'bg-accent/10',
+    iconColor: '#00d992',
+  },
+  denied: {
+    icon: 'close-circle-outline',
+    title: 'Response plan denied',
+    description: 'Pending defensive actions were skipped and will not execute.',
+    containerClassName: 'border-threat-critical/30 bg-threat-critical/10',
+    iconClassName: 'bg-threat-critical/10',
+    iconColor: '#ef4444',
+  },
+  executing: {
+    icon: 'sync-outline',
+    title: 'Executing response actions...',
+    description: 'Approved defensive actions are running in the background.',
+    containerClassName: 'border-accent/30 bg-accent/10',
+    iconClassName: 'bg-accent/10',
+    iconColor: '#00d992',
+    showSpinner: true,
+  },
+  executed: {
+    icon: 'shield-checkmark-outline',
+    title: 'Response actions completed',
+    description: 'All defensive actions finished successfully.',
+    containerClassName: 'border-threat-safe/30 bg-threat-safe/10',
+    iconClassName: 'bg-threat-safe/10',
+    iconColor: '#22c55e',
+  },
+  failed: {
+    icon: 'warning-outline',
+    title: 'Response execution failed',
+    description: 'One or more defensive actions failed. Check action results below for details.',
+    containerClassName: 'border-threat-critical/30 bg-threat-critical/10',
+    iconClassName: 'bg-threat-critical/10',
+    iconColor: '#ef4444',
+  },
+};
+
 function formatJson(value: Record<string, unknown> | null | undefined) {
   if (!value || Object.keys(value).length === 0) return null;
   return JSON.stringify(value, null, 2);
@@ -50,6 +113,7 @@ function formatJson(value: Record<string, unknown> | null | undefined) {
 
 export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) {
   const statusStyle = responsePlan ? statusStyleMap[responsePlan.status] : null;
+  const statusBanner = responsePlan ? statusBannerMap[responsePlan.status] : null;
 
   return (
     <View className="mb-6 rounded-2xl border border-border bg-bg-secondary p-5">
@@ -87,6 +151,31 @@ export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) 
         </View>
       ) : (
         <View className="gap-4">
+          {statusBanner ? (
+            <View
+              className={`flex-row gap-3 rounded-xl border p-4 ${statusBanner.containerClassName}`}>
+              <View
+                className={`h-9 w-9 items-center justify-center rounded-xl ${statusBanner.iconClassName}`}>
+                {statusBanner.showSpinner ? (
+                  <ActivityIndicator size="small" color={statusBanner.iconColor} />
+                ) : (
+                  <Ionicons name={statusBanner.icon} size={18} color={statusBanner.iconColor} />
+                )}
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-black text-text-primary">{statusBanner.title}</Text>
+                <Text className="mt-1 text-xs leading-5 text-text-secondary">
+                  {statusBanner.description}
+                </Text>
+                {responsePlan.status === 'denied' && responsePlan.denied_reason ? (
+                  <Text className="mt-2 text-xs leading-5 text-text-muted">
+                    Reason: {responsePlan.denied_reason}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          ) : null}
+
           <View>
             <Text className="mb-2 text-xs font-black uppercase tracking-wider text-text-muted">
               Summary
