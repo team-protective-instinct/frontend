@@ -111,9 +111,8 @@ export function IncidentDetailPanel({
 
         <ScrollView className="flex-1 p-6" contentContainerStyle={{ paddingBottom: 140 }}>
           <QuickInfoCards incident={incident} />
-          <ThreatIntelligence incident={incident} />
           <AnalysisSummary summary={incident.analysis_summary} />
-          <ResponsePlanSection responsePlan={incident.response_plan} />
+          <ThreatIntelligence incident={incident} />
           <AnalysisSection incident={incident} />
           <EvidenceLog
             rawLogs={incident.raw_logs}
@@ -121,6 +120,7 @@ export function IncidentDetailPanel({
             logModalVisible={logModalVisible}
             setLogModalVisible={setLogModalVisible}
           />
+          <ResponsePlanSection responsePlan={incident.response_plan} />
         </ScrollView>
 
         <DetailActionButtons
