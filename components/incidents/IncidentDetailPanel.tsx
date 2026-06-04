@@ -9,8 +9,9 @@ import {
   Text,
   ActivityIndicator,
 } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchIncidentDetail } from '../../services/incidents';
+import { approveResponsePlan, denyResponsePlan } from '../../services/responsePlans';
 import type { IncidentDetail } from '../../types';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { useSlideIn } from '../../hooks/useAnimation';
@@ -42,11 +43,33 @@ export function IncidentDetailPanel({
   const isDesktop = useIsDesktop();
   const [logModalVisible, setLogModalVisible] = useState(false);
   const { slideAnim, slide } = useSlideIn(Dimensions.get('window').width, 0, 300);
+  const queryClient = useQueryClient();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['incident', incidentIdx],
     queryFn: () => fetchIncidentDetail(incidentIdx!),
     enabled: visible && incidentIdx !== null && !preloadedIncident,
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: approveResponsePlan,
+    onSuccess: async () => {
+      if (incidentIdx !== null) {
+        await queryClient.invalidateQueries({ queryKey: ['incident', incidentIdx] });
+        await refetch();
+      }
+    },
+  });
+
+  const denyMutation = useMutation({
+    mutationFn: ({ responsePlanIdx, reason }: { responsePlanIdx: number; reason: string }) =>
+      denyResponsePlan(responsePlanIdx, reason),
+    onSuccess: async () => {
+      if (incidentIdx !== null) {
+        await queryClient.invalidateQueries({ queryKey: ['incident', incidentIdx] });
+        await refetch();
+      }
+    },
   });
 
   const incident = preloadedIncident ?? data;
@@ -100,7 +123,28 @@ export function IncidentDetailPanel({
           />
         </ScrollView>
 
-        <DetailActionButtons incident={incident} isDesktop={isDesktop} onClose={onClose} />
+        <DetailActionButtons
+          incident={incident}
+          isDesktop={isDesktop}
+          onApprove={() => {
+            if (incident.response_plan) {
+              approveMutation.mutate(incident.response_plan.idx);
+            }
+          }}
+          onDeny={(reason) => {
+            if (incident.response_plan) {
+              denyMutation.mutate({ responsePlanIdx: incident.response_plan.idx, reason });
+            }
+          }}
+          isSubmitting={approveMutation.isPending || denyMutation.isPending}
+          errorMessage={
+            approveMutation.error instanceof Error
+              ? approveMutation.error.message
+              : denyMutation.error instanceof Error
+                ? denyMutation.error.message
+                : null
+          }
+        />
       </View>
     );
   }
