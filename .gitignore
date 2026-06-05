@@ -23,4 +23,11 @@ android
 .sisyphus/
 .playwright-mcp/
 
+# IDE
+.idea/
+
+# Firebase credentials/config
+google-services.json
+*firebase-adminsdk*.json
+
 .env
