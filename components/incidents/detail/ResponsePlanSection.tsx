@@ -106,11 +106,6 @@ const statusBannerMap: Record<
   },
 };
 
-function formatJson(value: Record<string, unknown> | null | undefined) {
-  if (!value || Object.keys(value).length === 0) return null;
-  return JSON.stringify(value, null, 2);
-}
-
 export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) {
   const statusStyle = responsePlan ? statusStyleMap[responsePlan.status] : null;
   const statusBanner = responsePlan ? statusBannerMap[responsePlan.status] : null;
@@ -183,6 +178,18 @@ export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) 
             <MarkdownText>{responsePlan.summary}</MarkdownText>
           </View>
 
+          {responsePlan.execution_result ? (
+            <View className="rounded-xl border border-border bg-bg-primary/30 p-4">
+              <View className="mb-3 flex-row items-center gap-2">
+                <Ionicons name="shield-checkmark-outline" size={16} color="#00d992" />
+                <Text className="text-xs font-black uppercase tracking-wider text-text-muted">
+                  Execution Result
+                </Text>
+              </View>
+              <MarkdownText>{responsePlan.execution_result}</MarkdownText>
+            </View>
+          ) : null}
+
           <View>
             <Text className="mb-2 text-xs font-black uppercase tracking-wider text-text-muted">
               Defensive Actions
@@ -200,8 +207,6 @@ export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) 
                   .sort((a, b) => a.execution_order - b.execution_order) // execution_order 기준으로 정렬
                   .map((action) => {
                     const actionStatus = actionStatusStyleMap[action.status];
-                    const argumentsText = formatJson(action.arguments);
-                    const resultText = formatJson(action.result);
 
                     return (
                       <View key={action.idx} className="rounded-xl bg-bg-primary/50 p-4">
@@ -224,28 +229,6 @@ export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) 
                         </View>
 
                         {action.reason ? <MarkdownText muted>{action.reason}</MarkdownText> : null}
-
-                        {argumentsText ? (
-                          <View className="mt-3 rounded-lg border border-border bg-bg-secondary p-3">
-                            <Text className="mb-1 text-[10px] font-black uppercase text-text-muted">
-                              Arguments
-                            </Text>
-                            <Text className="font-mono text-[11px] leading-5 text-text-secondary">
-                              {argumentsText}
-                            </Text>
-                          </View>
-                        ) : null}
-
-                        {resultText ? (
-                          <View className="mt-3 rounded-lg border border-border bg-bg-secondary p-3">
-                            <Text className="mb-1 text-[10px] font-black uppercase text-text-muted">
-                              Result
-                            </Text>
-                            <Text className="font-mono text-[11px] leading-5 text-text-secondary">
-                              {resultText}
-                            </Text>
-                          </View>
-                        ) : null}
                       </View>
                     );
                   })}

@@ -38,6 +38,7 @@ export interface ResponsePlan {
   incident_idx: number;
   thread_id?: string | null;
   summary: string;
+  execution_result?: string | null;
   status: ResponsePlanStatus;
   denied_reason?: string | null;
   actions: ResponsePlanAction[];
