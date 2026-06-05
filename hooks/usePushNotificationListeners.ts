@@ -11,7 +11,7 @@ type NotificationResponse = Parameters<
 
 export function usePushNotificationListeners(queryClient: QueryClient) {
   useEffect(() => {
-    if (isAndroidExpoGo()) return;
+    if (Platform.OS === 'web' || isAndroidExpoGo()) return;
 
     let isMounted = true;
     let cleanup: (() => void) | undefined;
