@@ -29,7 +29,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#0F172A"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.s4tan.agent2dashboard"
@@ -39,7 +41,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F172A"
       },
-      "googleServicesFile": "./google-services.json",
       "package": "com.s4tan.agent2dashboard"
     },
     "extra": {
