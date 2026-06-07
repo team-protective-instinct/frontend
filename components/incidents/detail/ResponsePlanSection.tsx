@@ -229,6 +229,32 @@ export function ResponsePlanSection({ responsePlan }: ResponsePlanSectionProps) 
                         </View>
 
                         {action.reason ? <MarkdownText muted>{action.reason}</MarkdownText> : null}
+
+                        {action.arguments && Object.keys(action.arguments).length > 0 && (
+                          <View className="mt-3 border-t border-border/30 pt-3">
+                            <Text className="mb-2 text-[10px] font-black uppercase tracking-wider text-text-muted">
+                              Parameters
+                            </Text>
+                            <View className="flex-row flex-wrap gap-2">
+                              {Object.entries(action.arguments).map(([key, value]) => (
+                                <View
+                                  key={key}
+                                  className="flex-row items-center gap-1.5 rounded-lg border border-border/60 bg-bg-primary/45 px-2.5 py-1">
+                                  <Text className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                                    {key}
+                                  </Text>
+                                  <Text
+                                    selectable={true}
+                                    className="font-mono text-xs font-semibold text-accent">
+                                    {typeof value === 'object'
+                                      ? JSON.stringify(value)
+                                      : String(value)}
+                                  </Text>
+                                </View>
+                              ))}
+                            </View>
+                          </View>
+                        )}
                       </View>
                     );
                   })}
