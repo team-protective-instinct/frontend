@@ -64,7 +64,7 @@ export function IncidentFilterBar({
     <View>
       {/* Header & Search */}
       <View
-        className={`${isDesktop ? 'flex-row' : 'flex-col'} mb-8 items-start justify-between gap-6`}>
+        className={`${isDesktop ? 'mb-8 flex-row' : 'mb-4 flex-col'} items-start justify-between gap-6`}>
         <View>
           <Text className="text-3xl font-black tracking-tighter text-text-primary">INCIDENTS</Text>
           <Text className="mt-1 text-sm font-medium text-text-muted">
