@@ -15,6 +15,7 @@ import { approveResponsePlan, denyResponsePlan } from '../../services/responsePl
 import type { IncidentDetail } from '../../types';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { useSlideIn } from '../../hooks/useAnimation';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DetailHeader } from './detail/DetailHeader';
 import { ThreatIntelligence } from './detail/ThreatIntelligence';
@@ -176,7 +177,9 @@ export function IncidentDetailPanel({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      {content}
+      <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-[#101010]">
+        {content}
+      </SafeAreaView>
     </Modal>
   );
 }
